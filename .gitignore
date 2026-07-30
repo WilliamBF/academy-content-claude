@@ -1,0 +1,13 @@
+# Credentials
+secrets.env
+**/secrets.env
+
+# Python
+*.pyc
+__pycache__/
+
+# Browser session cookies
+*.session.json
+
+# macOS
+.DS_Store

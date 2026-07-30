@@ -1,0 +1,216 @@
+---
+name: "upload-course-to-TI"
+description: "Upload a course payload JSON to Thought Industries via the Incoming API — creates sections, lessons, and topics in the correct order."
+---
+
+# Upload Course to TI
+
+Upload a standardised payload JSON to Thought Industries. Runs after `convert-course-to-html` has generated an `upload_payload.json` and the HTML output in `03_HTML/`.
+
+**Co-located script:** `ti_uploader.py` (same folder as this SKILL.md) — the generic uploader. It never has a course ID baked in; the course ID is always supplied at runtime.
+
+---
+
+## Pre-flight checklist (MUST pass before uploading)
+
+1. **Images resolved** — Scan the payload / HTML for `PENDING_CDN_UPLOAD`. If ANY are found:
+
+   > **Cowork users:** `image_uploader.py` uses Playwright and **cannot run in Cowork**.
+   > Switch to Claude Code desktop/CLI (macOS or Windows) for this step, then return to Cowork for the upload itself.
+
+   - Run `image_uploader.py` (in the `course-to-html` skill folder) to upload images to TI CDN:
+     ```bash
+     python "$CLAUDE_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <images_folder> --output cdn_map.json
+     ```
+   - Then run `patch_cdn_urls.py` to replace placeholders with real CDN URLs:
+     ```bash
+     python "$CLAUDE_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <html_file> cdn_map.json
+     ```
+   - Only proceed once zero `PENDING_CDN_UPLOAD` strings remain
+
+2. **Videos resolved** — Scan for `WISTIA_MEDIA_ID_HERE`. Replace each with the real Wistia media ID before uploading.
+
+3. **Payload exists** — Confirm `upload_payload.json` (or a named equivalent) is present in `05_LMS_Sync/` for the course.
+
+4. **Course ID known** — Have the TI Course Shell UUID ready to pass via `--course-id`.
+
+---
+
+## Step 1 — Gather inputs
+
+You need two things:
+- **Path to the payload JSON** — standardised `upload_payload.json` produced by any convert script
+- **Thought Industries Course ID** — the UUID of the existing course shell to populate (passed at runtime; never baked into the script)
+
+---
+
+## Step 2 — Resolve credentials
+
+Credentials come from environment variables (typically loaded from `secrets.env`):
+- `TI_BASE_URL` — e.g. `https://academy.celonis.com`
+- `TI_API_KEY` — Bearer token for the Incoming API
+
+`ti_uploader.py` resolves credentials automatically by calling `lib/config.py → resolve_credentials()`, then falling back to walking up the directory tree for a `secrets.env` or `.env` file. Never print credential values.
+
+---
+
+## Step 3 — Run a dry run first
+
+Always validate before uploading to production:
+
+```bash
+python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+  --payload 05_LMS_Sync/upload_payload.json \
+  --course-id <UUID> \
+  --dry-run
+```
+
+Dry run output shows: section count / lesson count / topic count, and any pending placeholder warnings. No API calls are made.
+
+---
+
+## Step 4 — Check for pending placeholders (optional strict mode)
+
+To abort if any unresolved placeholders are present:
+
+```bash
+python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+  --payload 05_LMS_Sync/upload_payload.json \
+  --course-id <UUID> \
+  --check-pending
+```
+
+This flag causes the uploader to exit with an error if `PENDING_CDN_UPLOAD` or `WISTIA_MEDIA_ID_HERE` are found in any topic body.
+
+---
+
+## Step 5 — Upload
+
+```bash
+python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+  --payload 05_LMS_Sync/upload_payload.json \
+  --course-id <UUID>
+```
+
+The uploader will:
+1. Detect course type (MicroCourse vs standard)
+2. Create sections → fetch server IDs
+3. Create lessons → fetch server IDs
+4. Create topics in batches of 5
+
+### Legacy interactive mode
+
+Calling `ti_uploader.py` with **no arguments** falls back to interactive prompts (legacy behaviour — maintained for backward compatibility):
+
+```bash
+python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py"
+# Prompts: payload path, course ID
+```
+
+---
+
+## Payload JSON format (standardised)
+
+Every convert script must produce this structure:
+
+```json
+{
+  "sections": [
+    {
+      "title": "Section Title",
+      "lessons": [
+        {
+          "title": "Lesson Title",
+          "topics": [
+            {
+              "title": "Topic Title",
+              "type": "text",
+              "body": "<h1>...</h1><p>HTML content</p>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Body cleaning:** The uploader automatically strips time indicators like `[01:00]`, `[5 min]`, `[10 mins]` from topic bodies.
+
+---
+
+## Step 6 — Upload internals (reference)
+
+The TI Incoming API v2 does NOT support nested creation in a single call. `ti_uploader.py` follows the mandatory iterative pattern:
+
+### Phase 0: Detect course type
+
+```
+GET /incoming/v2/courses/{courseId}/sections
+```
+
+- Exactly 1 section titled "Main" + 1 lesson → **MicroCourse mode** (skip phases 1–2, push topics directly)
+- Otherwise → **Standard course mode**
+
+### Phase 1: Create sections → fetch IDs
+
+```
+PUT /incoming/v2/content/course/update
+Body: {"courseAttributes": {"sections": [{"courseId": "<id>", "title": "..."}, ...]}}
+```
+
+Wait 1.5 s, then `GET /incoming/v2/courses/{courseId}/sections` to fetch server-assigned IDs.
+
+### Phase 2: Create lessons → fetch IDs
+
+```
+PUT /incoming/v2/content/course/update
+Body: {"courseAttributes": {"lessons": [{"sectionId": "<phase-1-id>", "title": "..."}, ...]}}
+```
+
+Wait 1.5 s, then `GET /incoming/v2/courses/{courseId}/lessons`.
+
+### Phase 3: Create topics (batches of 5)
+
+```
+PUT /incoming/v2/content/course/update
+Body: {"courseAttributes": {"topics": [{"lessonId": "<phase-2-id>", "title": "...", "type": "text", "body": "..."}, ...]}}
+```
+
+### Chunking limits
+
+- Sections / lessons: max 25 per request
+- Topics: max 5 per request (large HTML bodies)
+
+### API details
+
+- Auth header: `Authorization: Bearer {api_key}`
+- Content-Type: `application/json`
+- Success codes: 200, 201, 204
+- All endpoints relative to `TI_BASE_URL`
+
+---
+
+## Step 7 — Report results
+
+Show:
+- Number of sections, lessons, and topics created
+- Any warnings (missing IDs, duplicate titles, API errors)
+- Confirmation upload completed
+
+Do NOT surface credentials or API keys in the output.
+
+> **Next step:** Run `/update-TI-course-metadata` to set the catalog description, audience tags,
+> duration, level, feature, role, and ribbon before the course goes live.
+
+---
+
+## Troubleshooting
+
+| Issue | Fix |
+|---|---|
+| 403 Forbidden | Check `TI_API_KEY` is set and has full API rights |
+| Topics not appearing | Verify lesson IDs were fetched correctly in Phase 2 |
+| `PENDING_CDN_UPLOAD` in payload | Run image_uploader.py + patch_cdn_urls.py first |
+| `WISTIA_MEDIA_ID_HERE` in payload | Replace with real Wistia media IDs before uploading |
+| Duplicate sections/lessons | Script handles duplicates by order of occurrence — verify payload structure |

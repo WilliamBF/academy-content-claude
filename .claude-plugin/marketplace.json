@@ -1,0 +1,18 @@
+{
+  "name": "celonis-academy-content",
+  "description": "Celonis Academy content creation plugins — course authoring, HTML transformation, and LMS publishing for Thought Industries.",
+  "owner": {
+    "name": "Celonis Academy Team"
+  },
+  "plugins": [
+    {
+      "name": "content-creation-plugin",
+      "source": "./",
+      "description": "Author, transform, and publish Celonis Academy courses to Thought Industries — course design, script writing, HTML conversion, image upload, and LMS publishing.",
+      "version": "2.10.0",
+      "author": {
+        "name": "Celonis Academy Team"
+      }
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "_comment": "Human-name -> API-value taxonomy cache for the update-TI-course-metadata skill. Update this file whenever Celonis Academy adds new tags or custom-field options in the TI admin UI. All UUIDs were captured 2026-07-27 from GET /incoming/v2/tags on the Celonis Academy TI instance.",
+
+  "audience_tags": {
+    "_visibility_warning": "Audience tags control catalog visibility. Setting 'internal', 'public', 'customer', 'partner', or 'academic' makes the course immediately visible to everyone in that logged-in group. 'academy' is Academy-only and low-risk. Skill MUST warn and require explicit confirmation before writing visibility-triggering tags.",
+    "academy": "3462116e-0372-5fa9-8491-6bb29ea235ef",
+    "customer": "9dab4b51-6942-5374-b553-1fc64c0f90e2",
+    "partner": "30bf1235-2760-58a9-b63f-2b50e5477fba",
+    "public": "b4564551-f290-5410-bfde-89c07263d46a",
+    "internal": "5e4488f1-4078-5923-a56b-64d32f0c05ee",
+    "academic": "598d4876-0b72-5708-96fd-6da232c799d0"
+  },
+
+  "owner_tags": {
+    "_note": "Owner tags do NOT affect visibility. Format: 'Owner <First> <Last>'. Auto-suggest the current LXD's tag; ask if unclear.",
+    "Owner Angelina Padarnitsas": "264fee94-2d37-4432-8374-4627648e77a8",
+    "Owner Antonio Mignacca": "d0c14ac4-6766-491c-b265-f151594aa3d0",
+    "Owner Begüm Ala": "16a2a02e-45b3-40db-a5d7-7c209b451c54",
+    "Owner Christina Adam": "8ddb2c9f-8066-400d-8c93-872fad91545f",
+    "Owner Elif Cevik": "f6bbf746-9869-4a6f-8a1e-78feaea328be",
+    "Owner Ilkim Sen": "a27cb798-ce1b-4881-a906-75cd6c13413b",
+    "Owner Isabella Sinnott": "80d7283d-6398-4d97-b9ae-39925d5c0510",
+    "Owner Jin Wei Tan": "46f7cf4b-cd4f-432d-95b9-c1f94f903602",
+    "Owner Kateryna Kubrak": "e3f2eea6-b5be-498d-8810-9693bcf98fa8",
+    "Owner Kavitha Nair": "83673bc7-875b-4459-b2aa-e5feacdcc7cb",
+    "Owner Leena Thomas": "dada2114-0aae-45a2-af2c-0355cd32d5d2",
+    "Owner Leonie Martin": "285d1020-0a90-4c99-86e6-77a884260cd7",
+    "Owner Lisa Hammann": "d86191ea-0b2d-457c-bdfd-e7e2b145f79f",
+    "Owner Marcos Peláez Durán": "13c5a6d3-aa2e-4d60-86eb-33be39355e2e",
+    "Owner Mari Ruiz": "5122bf14-1e60-4a98-b8b9-47cce1549de5",
+    "Owner Nicole Wendler": "d5d19a4e-bad3-4acd-b94b-2a1e71c51a06",
+    "Owner Philipp Barthel": "cccae525-e4c4-4afa-bf52-c49919ddbb7a",
+    "Owner Rubén Ramírez": "1ee496f7-f341-4891-8058-5851449fd6c6",
+    "Owner Sara Gholampour": "6011ce0f-5154-4848-9c9a-c66b9d3bfaca",
+    "Owner Swati Verma": "a7c22151-2b94-47f0-ac5e-e3b81ff487ab",
+    "Owner Theo Toxidis": "b54fd5d1-60e3-4892-ba21-5bb11c8ae7f0",
+    "Owner Varsha Ajai Surya": "491d13d1-1073-49d9-8896-d7d42da88f5f",
+    "Owner William Falls": "dbc442fb-d916-4f59-918f-332569d97d75"
+  },
+
+  "ribbon_slugs": {
+    "_note": "Valid ribbon slugs discovered via probe error message on 2026-07-27. Display names are the LXD-facing labels in the TI admin UI. Accept either form as input; write the slug.",
+    "new": {"slug": "new", "display": "New!"},
+    "updated": {"slug": "updated", "display": "Updated"},
+    "internal": {"slug": "internal", "display": "Internal (purpose unclear - confirm with LXD before using)"}
+  },
+
+  "custom_fields": {
+    "_note": "UI label -> API key mapping and enum options. When writing customFields, use the API key, not the UI label.",
+    "duration": {
+      "api_key": "duration",
+      "ui_label": "Duration",
+      "select": "single",
+      "options": ["<30min", "30min", "30min - 1h", "1h", "1h - 1h 30", "1h - 3h", "3h+"]
+    },
+    "level": {
+      "api_key": "level",
+      "ui_label": "Level",
+      "select": "single",
+      "options": ["Beginner", "Intermediate", "Advanced"]
+    },
+    "feature": {
+      "api_key": "product",
+      "ui_label": "Feature",
+      "select": "multi",
+      "options": ["Studio", "Action Flows", "Data Integration", "AI", "Apps", "View", "Analysis", "PQL", "OCPM", "CPM"]
+    },
+    "role": {
+      "api_key": "role",
+      "ui_label": "Role",
+      "select": "multi",
+      "options": ["Data Analyst", "Data Engineer", "Value Architect", "Transformation Lead", "Project Manager", "Celonis (CoE) Lead", "Process Lead", "Business User", "Account Lead", "Champion"]
+    }
+  },
+
+  "readonly_via_api": {
+    "_note": "Fields that the metadata endpoint does not accept writes for. Instruct the LXD to set these in the TI admin UI.",
+    "source": "Advanced Settings > Source (approximate duration). Every value tested returns HTTP 400 A processing error occurred, including strings other courses already have stored. Possible TI API bug or intentional read-only. Consider feature request.",
+    "learning_objectives_tab": "Detail Page Settings > Tabs > free-text tab called 'Learning Objectives'. No API field found."
+  }
+}

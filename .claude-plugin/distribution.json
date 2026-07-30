@@ -1,0 +1,14 @@
+{
+  "skills": ["actions", "routines"],
+  "include": [
+    "hooks/",
+    "lib/",
+    ".claude-plugin/"
+  ],
+  "exclude": [
+    "secrets.env",
+    "*.pyc",
+    "__pycache__/",
+    "*.session.json"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "content-creation-plugin",
+  "description": "Celonis Academy content creation toolkit — author, transform, and publish courses to the Thought Industries LMS. Organized as Actions (single operations) and Routines (multi-step sequences).",
+  "version": "2.10.0",
+  "author": {
+    "name": "Celonis Academy Team"
+  },
+  "license": "MIT",
+  "keywords": [
+    "celonis",
+    "academy",
+    "thought-industries",
+    "course-authoring",
+    "html-conversion",
+    "lms",
+    "content-creation",
+    "exam-questions",
+    "assessment"
+  ],
+  "skills": [
+    "./skills/actions/",
+    "./skills/routines/"
+  ]
+}

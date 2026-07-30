@@ -1,0 +1,8 @@
+# Core — used by lms-extract, crawl-celonis-docs, lms-upload
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+markdownify>=0.11.0
+
+# Image uploader (Playwright, browser-based — install separately)
+# pip install playwright && playwright install chromium
+# playwright>=1.40.0

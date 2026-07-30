@@ -1,0 +1,390 @@
+#!/usr/bin/env python3
+"""
+ti_uploader.py
+Generic Thought Industries Incoming API v2 uploader.
+
+Usage:
+  python ti_uploader.py --payload upload_payload.json --course-id <COURSE_ID>
+
+Payload JSON format:
+  {
+    "sections": [
+      {
+        "title": "Section Title",
+        "lessons": [
+          {
+            "title": "Lesson Title",
+            "topics": [
+              {"title": "Topic Title", "type": "text", "body": "<p>HTML</p>"}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+
+Credentials are resolved via lib/config.py, which checks (in order):
+  1. secrets.env in workspace root or any parent folder (up to 5 levels)
+  2. ~/.claude/secrets.env (one-time central setup)
+  3. Existing environment variables
+"""
+
+import argparse
+import json
+import os
+import re
+import sys
+import time
+from pathlib import Path
+
+try:
+    import requests
+except ImportError:
+    print("Installing requests...")
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests", "--break-system-packages", "-q"])
+    import requests
+
+# ---------------------------------------------------------------------------
+# Credentials via lib/config.py
+# ---------------------------------------------------------------------------
+
+PLUGIN_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+sys.path.insert(0, str(PLUGIN_ROOT))
+from lib.config import resolve_credentials  # noqa: E402
+
+
+# ---------------------------------------------------------------------------
+# API helpers
+# ---------------------------------------------------------------------------
+
+def headers(api_key: str) -> dict:
+    return {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+
+def put_update(base_url, api_key, course_attributes: dict):
+    url = f"{base_url}/incoming/v2/content/course/update"
+    resp = requests.put(url, headers=headers(api_key), json={"courseAttributes": course_attributes}, timeout=60)
+    if resp.status_code not in (200, 201, 204):
+        print(f"  ERROR {resp.status_code}: {resp.text[:300]}")
+        resp.raise_for_status()
+    return resp
+
+
+def _unwrap_list(raw, key_hint: str = None) -> list:
+    """
+    TI API responses vary: flat list, or wrapped in a key like
+    {"sections": [...]} / {"courseGroup": {"sections": [...]}} / {"data": [...]}.
+    Always return a list of dicts.
+    """
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        # Unwrap courseGroup envelope first (some TI tenants nest responses here)
+        if "courseGroup" in raw and isinstance(raw["courseGroup"], dict):
+            raw = raw["courseGroup"]
+        # Try the expected key first, then fall back to common wrapper keys
+        search_keys = ([key_hint] if key_hint else []) + [
+            "sections", "lessons", "topics", "data", "items", "results"
+        ]
+        for key in search_keys:
+            if key and key in raw and isinstance(raw[key], list):
+                return raw[key]
+        # Single-object response -- wrap it
+        return [raw]
+    return []
+
+
+def get_sections(base_url, api_key, course_id: str) -> list:
+    url = f"{base_url}/incoming/v2/courses/{course_id}/sections"
+    resp = requests.get(url, headers=headers(api_key), timeout=30)
+    resp.raise_for_status()
+    raw = resp.json()
+    result = _unwrap_list(raw, key_hint="sections")
+    if not result:
+        print(f"  DEBUG get_sections raw response: {json.dumps(raw)[:400]}")
+    return result
+
+
+def get_lessons(base_url, api_key, course_id: str) -> list:
+    url = f"{base_url}/incoming/v2/courses/{course_id}/lessons"
+    resp = requests.get(url, headers=headers(api_key), timeout=30)
+    resp.raise_for_status()
+    raw = resp.json()
+    result = _unwrap_list(raw, key_hint="lessons")
+    if not result:
+        print(f"  DEBUG get_lessons raw response: {json.dumps(raw)[:400]}")
+    return result
+
+
+def chunks(lst: list, size: int):
+    for i in range(0, len(lst), size):
+        yield lst[i:i + size]
+
+
+# ---------------------------------------------------------------------------
+# Payload pre-processing
+# ---------------------------------------------------------------------------
+
+_TIME_RE = re.compile(r"\[\d{1,2}:\d{2}(?::\d{2})?\]|\[\d+\s*mins?\]", re.IGNORECASE)
+
+
+def strip_time_indicators(payload: dict) -> dict:
+    """Remove [01:00], [5 min], [10 mins] markers from topic bodies in place."""
+    for sec in payload.get("sections", []):
+        for les in sec.get("lessons", []):
+            for top in les.get("topics", []):
+                if top.get("body"):
+                    top["body"] = _TIME_RE.sub("", top["body"]).strip()
+    return payload
+
+
+def find_placeholders(payload: dict) -> list[str]:
+    """Return a list of warning strings for unresolved placeholders."""
+    warnings = []
+    for sec in payload.get("sections", []):
+        for les in sec.get("lessons", []):
+            for top in les.get("topics", []):
+                body = top.get("body", "")
+                if "PENDING_CDN_UPLOAD" in body:
+                    warnings.append(f"  PENDING_CDN_UPLOAD found in topic '{top.get('title', '?')}'")
+                if "WISTIA_MEDIA_ID_HERE" in body:
+                    warnings.append(f"  WISTIA_MEDIA_ID_HERE found in topic '{top.get('title', '?')}'")
+    return warnings
+
+
+# ---------------------------------------------------------------------------
+# Upload phases
+# ---------------------------------------------------------------------------
+
+SECTION_CHUNK = 25
+LESSON_CHUNK  = 25
+TOPIC_CHUNK   = 5
+
+
+def phase0_detect(base_url, api_key, course_id: str):
+    """Return (is_microcourse, existing_lesson_id_or_None)."""
+    secs = get_sections(base_url, api_key, course_id)
+    print(f"  Course shell has {len(secs)} section(s)")
+    if not secs:
+        return False, None
+    first = secs[0]
+    if not isinstance(first, dict):
+        print(f"  WARNING: unexpected section format ({type(first).__name__}), treating as standard course")
+        return False, None
+    if (
+        len(secs) == 1
+        and first.get("title", "").strip().lower() == "main"
+        and len(first.get("lessons", [])) == 1
+    ):
+        lesson_id = first["lessons"][0].get("id") or first["lessons"][0].get("lessonId")
+        return True, lesson_id
+    return False, None
+
+
+def phase1_create_sections(base_url, api_key, course_id: str, payload: dict) -> dict:
+    """Create sections; return {title: id} map."""
+    section_defs = [{"courseId": course_id, "title": s["title"]} for s in payload["sections"]]
+    print(f"\nPhase 1 -- creating {len(section_defs)} section(s)...")
+    for chunk in chunks(section_defs, SECTION_CHUNK):
+        put_update(base_url, api_key, {"sections": chunk})
+    time.sleep(1.5)
+
+    remote = get_sections(base_url, api_key, course_id)
+    seen: dict[str, list] = {}
+    for s in remote:
+        t = s.get("title", "")
+        seen.setdefault(t, []).append(s.get("id") or s.get("sectionId"))
+
+    wanted = [s["title"] for s in payload["sections"]]
+    id_map = {}
+    counters: dict[str, int] = {}
+    for title in wanted:
+        idx = counters.get(title, 0)
+        id_map[title] = seen.get(title, [None])[idx] if seen.get(title) else None
+        counters[title] = idx + 1
+
+    print(f"  Mapped {sum(1 for v in id_map.values() if v)} / {len(id_map)} section IDs")
+    return id_map
+
+
+def phase2_create_lessons(base_url, api_key, course_id: str, payload: dict, section_id_map: dict) -> dict:
+    """Create lessons; return {(section_id, title): lesson_id} map."""
+    lesson_defs = []
+    for sec in payload["sections"]:
+        sid = section_id_map.get(sec["title"])
+        if not sid:
+            print(f"  WARNING: no section ID for '{sec['title']}' -- skipping its lessons")
+            continue
+        for les in sec["lessons"]:
+            lesson_defs.append({"sectionId": sid, "title": les["title"]})
+
+    print(f"\nPhase 2 -- creating {len(lesson_defs)} lesson(s)...")
+    for chunk in chunks(lesson_defs, LESSON_CHUNK):
+        put_update(base_url, api_key, {"lessons": chunk})
+    time.sleep(1.5)
+
+    remote = get_lessons(base_url, api_key, course_id)
+    seen: dict[tuple, list] = {}
+    for les in remote:
+        key = (les.get("sectionId"), les.get("title", ""))
+        seen.setdefault(key, []).append(les.get("id") or les.get("lessonId"))
+
+    id_map = {}
+    counters: dict[tuple, int] = {}
+    for ld in lesson_defs:
+        key = (ld["sectionId"], ld["title"])
+        idx = counters.get(key, 0)
+        ids = seen.get(key, [None])
+        id_map[key] = ids[idx] if idx < len(ids) else None
+        counters[key] = idx + 1
+
+    print(f"  Mapped {sum(1 for v in id_map.values() if v)} / {len(id_map)} lesson IDs")
+    return id_map
+
+
+def phase3_create_topics(base_url, api_key, payload: dict, section_id_map: dict, lesson_id_map: dict):
+    """Create topics in chunks of 5."""
+    topic_defs = []
+    for sec in payload["sections"]:
+        sid = section_id_map.get(sec["title"])
+        for les in sec["lessons"]:
+            key = (sid, les["title"])
+            lid = lesson_id_map.get(key)
+            if not lid:
+                print(f"  WARNING: no lesson ID for '{les['title']}' in '{sec['title']}' -- skipping {len(les['topics'])} topics")
+                continue
+            for top in les["topics"]:
+                topic_defs.append({
+                    "lessonId": lid,
+                    "title": top["title"],
+                    "type": top.get("type", "text"),
+                    "body": top.get("body", ""),
+                })
+
+    total = len(topic_defs)
+    print(f"\nPhase 3 -- creating {total} topic(s) in chunks of {TOPIC_CHUNK}...")
+    created = 0
+    for i, chunk in enumerate(chunks(topic_defs, TOPIC_CHUNK)):
+        put_update(base_url, api_key, {"topics": chunk})
+        created += len(chunk)
+        print(f"  {created}/{total} topics uploaded", end="\r")
+    print(f"  {created}/{total} topics uploaded")
+    return created
+
+
+def microcourse_upload(base_url, api_key, lesson_id: str, payload: dict):
+    """Push all topics directly to the single existing lesson."""
+    all_topics = []
+    for sec in payload["sections"]:
+        for les in sec["lessons"]:
+            for top in les["topics"]:
+                all_topics.append({
+                    "lessonId": lesson_id,
+                    "title": top["title"],
+                    "type": top.get("type", "text"),
+                    "body": top.get("body", ""),
+                })
+    total = len(all_topics)
+    print(f"\nMicroCourse mode -- pushing {total} topic(s) to lesson {lesson_id}...")
+    created = 0
+    for chunk in chunks(all_topics, TOPIC_CHUNK):
+        put_update(base_url, api_key, {"topics": chunk})
+        created += len(chunk)
+        print(f"  {created}/{total} topics uploaded", end="\r")
+    print(f"  {created}/{total} topics uploaded")
+    return created
+
+
+# ---------------------------------------------------------------------------
+# Entrypoint
+# ---------------------------------------------------------------------------
+
+def run_upload(payload_path: str, course_id: str, dry_run: bool = False, check_pending: bool = False):
+    path = Path(payload_path)
+    if not path.exists():
+        print(f"ERROR: payload file not found: {path}")
+        sys.exit(1)
+
+    with open(path, encoding="utf-8") as f:
+        payload = json.load(f)
+
+    # Strip time indicators from all topic bodies
+    strip_time_indicators(payload)
+
+    n_sections = len(payload.get("sections", []))
+    n_lessons  = sum(len(s.get("lessons", [])) for s in payload.get("sections", []))
+    n_topics   = sum(
+        len(les.get("topics", []))
+        for s in payload.get("sections", [])
+        for les in s.get("lessons", [])
+    )
+
+    placeholders = find_placeholders(payload)
+
+    if dry_run:
+        print(f"Dry run -- {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)")
+        if placeholders:
+            print("\nWarnings (unresolved placeholders):")
+            for w in placeholders:
+                print(w)
+        else:
+            print("No unresolved placeholders found")
+        return
+
+    if check_pending and placeholders:
+        print("ERROR: unresolved placeholders found -- upload aborted:")
+        for w in placeholders:
+            print(w)
+        sys.exit(1)
+
+    if placeholders:
+        print("WARNING: unresolved placeholders in payload:")
+        for w in placeholders:
+            print(w)
+        print("Proceeding anyway -- use --check-pending to abort on warnings.")
+
+    print(f"Uploading {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)...")
+    creds = resolve_credentials()
+    base_url = creds["base_url"]
+    api_key  = creds["api_key"]
+    print(f"  TI_BASE_URL : {base_url}")
+    print(f"  TI_API_KEY  : SET ({len(api_key)} chars)")
+
+    is_micro, lesson_id = phase0_detect(base_url, api_key, course_id)
+
+    if is_micro:
+        print("Detected MicroCourse shell -- skipping section/lesson creation.")
+        created = microcourse_upload(base_url, api_key, lesson_id, payload)
+    else:
+        section_id_map = phase1_create_sections(base_url, api_key, course_id, payload)
+        lesson_id_map  = phase2_create_lessons(base_url, api_key, course_id, payload, section_id_map)
+        created        = phase3_create_topics(base_url, api_key, payload, section_id_map, lesson_id_map)
+
+    print(f"\nUpload complete -- {created} topic(s) created.")
+
+
+def main():
+    # Legacy interactive mode when called with no arguments
+    if len(sys.argv) == 1:
+        print("content-creation-plugin -- TI uploader (interactive mode)")
+        payload_path = input("Payload JSON path: ").strip()
+        course_id    = input("Course ID (UUID):  ").strip()
+        run_upload(payload_path, course_id)
+        return
+
+    parser = argparse.ArgumentParser(description="Upload a course payload to Thought Industries")
+    parser.add_argument("--payload",       required=True, help="Path to upload_payload.json")
+    parser.add_argument("--course-id",     required=True, help="TI course UUID (the shell to populate)")
+    parser.add_argument("--dry-run",       action="store_true", help="Parse inputs and report without calling the API")
+    parser.add_argument("--check-pending", action="store_true", help="Abort if PENDING_CDN_UPLOAD or WISTIA_MEDIA_ID_HERE found")
+    args = parser.parse_args()
+
+    run_upload(args.payload, args.course_id, dry_run=args.dry_run, check_pending=args.check_pending)
+
+
+if __name__ == "__main__":
+    main()
