@@ -1,4 +1,4 @@
----
+﻿---
 name: "design-course-content"
 description: "Plan, outline, draft, and review any Celonis Academy training content (scripts, storyboards, lesson outlines, knowledge checks) using the team's instructional design foundations and content style guide. Use this skill at the start of any new content piece — before scripting begins."
 ---
@@ -39,13 +39,13 @@ If they provide a Drive folder or local files, read them before drafting.
 
 Three reference files are bundled with this plugin — read whichever apply to the task:
 
-- `$CLAUDE_PLUGIN_ROOT/reference/instructional_design_foundations.md` — the theory:
+- `$CONTENT_CREATION_PLUGIN_ROOT/reference/instructional_design_foundations.md` — the theory:
   learning needs analysis, outcome-based objectives, content sequencing, Gagne's 9 events,
   the 8-step ID process, evaluation. Read this when planning structure or sequencing.
-- `$CLAUDE_PLUGIN_ROOT/reference/celonis_content_style_guide.md` — the house style:
+- `$CONTENT_CREATION_PLUGIN_ROOT/reference/celonis_content_style_guide.md` — the house style:
   tone, active voice, sentence length, number formatting, naming conventions, the inclusion
   checklist, voiceover rules. Read this when writing sentences or reviewing a draft.
-- `$CLAUDE_PLUGIN_ROOT/reference/question_writing_guide.md` — how to write knowledge
+- `$CONTENT_CREATION_PLUGIN_ROOT/reference/question_writing_guide.md` — how to write knowledge
   checks and qualification exam questions: Bloom's cognitive levels, MCQ/MRQ format rules,
   distractor writing, what's off-limits in qualification exams. Read this whenever the task
   involves any quiz or exam questions.

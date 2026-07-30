@@ -1,4 +1,4 @@
----
+﻿---
 name: "get-TI-course-structure"
 description: "Fetch and display the full section/lesson/topic tree for a TI course, including entity UUIDs — useful before running update-TI-content."
 ---
@@ -21,13 +21,13 @@ You need the course UUID (not the courseGroup UUID). If you don't have it:
 ## Step 2 — Fetch the structure
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/get-TI-course-structure/ti_structure.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/get-TI-course-structure/ti_structure.py" \
   --course-id "<course_uuid>"
 ```
 
 Optional — save the raw JSON for reference:
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/get-TI-course-structure/ti_structure.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/get-TI-course-structure/ti_structure.py" \
   --course-id "<course_uuid>" \
   --output structure.json
 ```

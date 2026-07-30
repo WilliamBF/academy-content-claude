@@ -1,4 +1,4 @@
----
+﻿---
 name: "update-TI-content"
 description: "Update a specific topic, lesson, or section in Thought Industries by UUID — for targeted fixes and edits without re-running the full upload."
 ---
@@ -27,7 +27,7 @@ Ask the user:
 ## Step 2 — Fetch the course structure (if UUIDs are unknown)
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/get-TI-course-structure/ti_structure.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/get-TI-course-structure/ti_structure.py" \
   --course-id "<course_uuid>"
 ```
 
@@ -82,14 +82,14 @@ is missing an id.
 ## Step 4 — Dry run (confirm before applying)
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/update-TI-content/ti_updater.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-content/ti_updater.py" \
   --json '<payload_json_here>' \
   --dry-run
 ```
 
 Or using a file:
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/update-TI-content/ti_updater.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-content/ti_updater.py" \
   --payload update_payload.json \
   --dry-run
 ```
@@ -101,7 +101,7 @@ Review the printed payload. Once confirmed, remove `--dry-run` to apply.
 ## Step 5 — Apply the update
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/update-TI-content/ti_updater.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-content/ti_updater.py" \
   --json '<payload_json_here>'
 ```
 

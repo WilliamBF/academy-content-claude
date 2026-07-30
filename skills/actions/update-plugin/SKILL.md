@@ -1,4 +1,4 @@
----
+﻿---
 name: "update-plugin"
 description: "Check GitHub Releases for a newer version of the content-creation-plugin and install it if available."
 ---
@@ -12,7 +12,7 @@ Check the configured GitHub repository for a newer version of the plugin and ins
 ## Step 0 -- Check the environment
 
 ```bash
-echo "${CLAUDE_PLUGIN_ROOT:-NOT_SET}"
+echo "${CONTENT_CREATION_PLUGIN_ROOT:-NOT_SET}"
 ```
 
 If `NOT_SET`: the plugin is not loaded. Tell the user and stop.
@@ -25,7 +25,7 @@ If `NOT_SET`: the plugin is not loaded. Tell the user and stop.
 python -c "
 import os
 from pathlib import Path
-root = Path(os.environ['CLAUDE_PLUGIN_ROOT'])
+root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
 test = root / '.write_test'
 try:
     test.touch(); test.unlink()
@@ -50,7 +50,7 @@ Then stop.
 python -c "
 import json, os, sys
 from pathlib import Path
-root = Path(os.environ['CLAUDE_PLUGIN_ROOT'])
+root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
 sys.path.insert(0, str(root))
 from lib.config import _load_env_file
 _load_env_file()
@@ -79,7 +79,7 @@ If `repo` or `token` is `NOT_CONFIGURED`:
 python -c "
 import json, os, sys, urllib.request
 from pathlib import Path
-root = Path(os.environ['CLAUDE_PLUGIN_ROOT'])
+root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
 sys.path.insert(0, str(root))
 from lib.config import _load_env_file
 _load_env_file()
@@ -137,7 +137,7 @@ Replace `ASSET_ID_FROM_STEP_2` with the asset ID printed in Step 2.
 python -c "
 import os, sys, tempfile, urllib.request
 from pathlib import Path
-root = Path(os.environ['CLAUDE_PLUGIN_ROOT'])
+root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
 sys.path.insert(0, str(root))
 from lib.config import _load_env_file
 _load_env_file()
@@ -171,7 +171,7 @@ import zipfile, os
 from pathlib import Path
 
 tmp_zip = 'TEMP_ZIP_PATH'
-plugin_root = Path(os.environ['CLAUDE_PLUGIN_ROOT'])
+plugin_root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
 
 with zipfile.ZipFile(tmp_zip) as z:
     members = z.namelist()
@@ -199,8 +199,8 @@ print('Installed to:', str(plugin_root))
 
 Tell the user:
 > Plugin updated to **v{remote_version}**. To activate the new version:
-> 1. Run `/reload-plugins` in this session, or
-> 2. Start a new Claude Code session.
+> 1. Start a new Claude Code session (recommended), or
+> 2. Run `/reload-plugins` to reload skills in this session.
 
 ---
 

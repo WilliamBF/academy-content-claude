@@ -1,4 +1,4 @@
----
+﻿---
 name: "browse-TI-catalog"
 description: "List courses from the TI catalog with their slugs and UUIDs — useful for finding a course ID before running extract-TI-course, get-TI-course-structure, or update-TI-content."
 ---
@@ -14,18 +14,18 @@ Use this when you need to find a course's UUID and only know its name.
 
 List all courses (cursor-based pagination, up to 250 by default):
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/browse-TI-catalog/ti_catalog.py"
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/browse-TI-catalog/ti_catalog.py"
 ```
 
 Search by name keyword:
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/browse-TI-catalog/ti_catalog.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/browse-TI-catalog/ti_catalog.py" \
   --search "<keyword>"
 ```
 
 Raise the fetch limit for large catalogs:
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/browse-TI-catalog/ti_catalog.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/browse-TI-catalog/ti_catalog.py" \
   --limit 500
 ```
 

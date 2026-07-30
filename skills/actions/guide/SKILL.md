@@ -1,4 +1,4 @@
----
+﻿---
 name: "guide"
 description: "Start here. Checks your workspace status, shows where each course project is in the pipeline, and routes you to the right skill for your next step."
 ---
@@ -13,10 +13,10 @@ and a clear recommendation, not a lecture.
 
 ## Step 0 — Check the plugin environment
 
-Before anything else, verify the plugin is properly loaded by checking `CLAUDE_PLUGIN_ROOT`:
+Before anything else, verify the plugin is properly loaded by checking `CONTENT_CREATION_PLUGIN_ROOT`:
 
 ```bash
-echo "${CLAUDE_PLUGIN_ROOT:-NOT_SET}"
+echo "${CONTENT_CREATION_PLUGIN_ROOT:-NOT_SET}"
 ```
 
 If the output is `NOT_SET` (or empty), the plugin is not loaded in this session. Tell the user:
@@ -24,7 +24,7 @@ If the output is `NOT_SET` (or empty), the plugin is not loaded in this session.
 > The plugin does not appear to be loaded. Make sure it is installed in Claude Code
 > (`/plugin list` to check), then start a new session.
 
-If `CLAUDE_PLUGIN_ROOT` is set, proceed. All skill scripts reference `$CLAUDE_PLUGIN_ROOT`
+If `CONTENT_CREATION_PLUGIN_ROOT` is set, proceed. All skill scripts reference `$CONTENT_CREATION_PLUGIN_ROOT`
 directly — no additional setup is required for the paths to work.
 
 ---
@@ -155,4 +155,4 @@ A workspace-root `secrets.env` takes priority over `~/.claude/secrets.env` if bo
 For macOS/Windows users who want to avoid copying the file per project, creating
 `~/.claude/secrets.env` also works — but it does not persist in container environments.
 
-To print the exact `secrets.env` template, run `python "$CLAUDE_PLUGIN_ROOT/setup.py"` from any directory.
+To print the exact `secrets.env` template, run `python "$CONTENT_CREATION_PLUGIN_ROOT/setup.py"` from any directory.

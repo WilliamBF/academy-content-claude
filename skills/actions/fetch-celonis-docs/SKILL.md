@@ -1,4 +1,4 @@
----
+﻿---
 name: "fetch-celonis-docs"
 description: "Crawl a Celonis docs section by URL, follow its sidebar navigation, and save pages as .md files into a course's 01_Source_Material folder."
 ---
@@ -66,7 +66,7 @@ The cookie is valid for the duration of your SSO session (typically hours to day
 **Run (cookie mode — no extra install needed):**
 ```bash
 pip install beautifulsoup4 markdownify requests --break-system-packages -q
-printf '<ENTRY_URL>\n<OUTPUT_PATH>\n' | python "$CLAUDE_PLUGIN_ROOT/skills/actions/fetch-celonis-docs/crawl_celonis_docs.py"
+printf '<ENTRY_URL>\n<OUTPUT_PATH>\n' | python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/fetch-celonis-docs/crawl_celonis_docs.py"
 ```
 
 ---
@@ -78,7 +78,7 @@ Requires Playwright + Chromium. On first run a browser window opens for SSO logi
 ```bash
 pip install beautifulsoup4 markdownify playwright --break-system-packages -q
 python -m playwright install chromium --quiet
-printf '<ENTRY_URL>\n<OUTPUT_PATH>\n' | python "$CLAUDE_PLUGIN_ROOT/skills/actions/fetch-celonis-docs/crawl_celonis_docs.py"
+printf '<ENTRY_URL>\n<OUTPUT_PATH>\n' | python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/fetch-celonis-docs/crawl_celonis_docs.py"
 ```
 
 When the browser opens: click **Celonaut Login**, complete the SSO flow, then press **Enter** in the terminal.

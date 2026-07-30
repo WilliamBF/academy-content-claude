@@ -1,4 +1,4 @@
----
+﻿---
 name: "extract-local-resources"
 description: "Extract text, tables, slide notes, and embedded images from local source documents (PPTX, PDF, DOCX, MD, TXT) into a structured dump for use as course source material."
 ---
@@ -45,14 +45,14 @@ pip install python-pptx pdfplumber pypdf python-docx --break-system-packages -q
 ## Step 4 — Run the extractor
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/extract-local-resources/extract_resources.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/extract-local-resources/extract_resources.py" \
   "<output_dir>" \
   "<file1>" "<file2>" ...
 ```
 
 **Example:**
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/actions/extract-local-resources/extract_resources.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/actions/extract-local-resources/extract_resources.py" \
   "courses/my-course/01_Source_Material/extracted" \
   "/path/to/deck.pptx" \
   "/path/to/spec.pdf"

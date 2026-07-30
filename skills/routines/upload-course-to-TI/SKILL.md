@@ -1,4 +1,4 @@
----
+﻿---
 name: "upload-course-to-TI"
 description: "Upload a course payload JSON to Thought Industries via the Incoming API — creates sections, lessons, and topics in the correct order."
 ---
@@ -20,11 +20,11 @@ Upload a standardised payload JSON to Thought Industries. Runs after `convert-co
 
    - Run `image_uploader.py` (in the `course-to-html` skill folder) to upload images to TI CDN:
      ```bash
-     python "$CLAUDE_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <images_folder> --output cdn_map.json
+     python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <images_folder> --output cdn_map.json
      ```
    - Then run `patch_cdn_urls.py` to replace placeholders with real CDN URLs:
      ```bash
-     python "$CLAUDE_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <html_file> cdn_map.json
+     python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <html_file> cdn_map.json
      ```
    - Only proceed once zero `PENDING_CDN_UPLOAD` strings remain
 
@@ -59,7 +59,7 @@ Credentials come from environment variables (typically loaded from `secrets.env`
 Always validate before uploading to production:
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
   --payload 05_LMS_Sync/upload_payload.json \
   --course-id <UUID> \
   --dry-run
@@ -74,7 +74,7 @@ Dry run output shows: section count / lesson count / topic count, and any pendin
 To abort if any unresolved placeholders are present:
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
   --payload 05_LMS_Sync/upload_payload.json \
   --course-id <UUID> \
   --check-pending
@@ -87,7 +87,7 @@ This flag causes the uploader to exit with an error if `PENDING_CDN_UPLOAD` or `
 ## Step 5 — Upload
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
   --payload 05_LMS_Sync/upload_payload.json \
   --course-id <UUID>
 ```
@@ -103,7 +103,7 @@ The uploader will:
 Calling `ti_uploader.py` with **no arguments** falls back to interactive prompts (legacy behaviour — maintained for backward compatibility):
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py"
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py"
 # Prompts: payload path, course ID
 ```
 

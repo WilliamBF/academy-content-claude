@@ -1,4 +1,4 @@
----
+﻿---
 name: "convert-course-to-html"
 description: "Transform a course .md draft into structured, TI-ready HTML using the plugin's snippet block library. Handles image placeholders and the CDN upload workflow."
 ---
@@ -90,8 +90,8 @@ If alt text or context suggests an animated GIF, flag it with a comment.
 ### Post-generation: image upload workflow
 After HTML generation, run these two co-located scripts in order:
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <images_folder> --output cdn_map.json
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <html_file> <cdn_map.json>
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <images_folder> --output cdn_map.json
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <html_file> <cdn_map.json>
 ```
 
 ---

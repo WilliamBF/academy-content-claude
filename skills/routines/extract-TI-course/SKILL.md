@@ -1,4 +1,4 @@
----
+﻿---
 name: "extract-TI-course"
 description: "Extract an existing course from Thought Industries and save it as structured .md files organised by section, lesson, and topic for use as reference material."
 ---
@@ -54,14 +54,14 @@ Confirm the extracted slug (or UUID) with the user before proceeding.
 
 Using a slug:
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
   --slug "<slug>" \
   --output "<raw_json_path>"
 ```
 
 Using a course UUID (preferred):
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
   --course-id "<uuid>" \
   --output "<raw_json_path>"
 ```
@@ -88,7 +88,7 @@ via the Incoming API.
 ## Step 4 — Parse into .md files
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_parse.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_parse.py" \
   "<raw_json_path>" "<output_folder>"
 ```
 

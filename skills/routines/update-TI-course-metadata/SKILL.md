@@ -1,4 +1,4 @@
----
+﻿---
 name: "update-TI-course-metadata"
 description: "Update the course-group-level metadata (description, meta title / description, custom fields, tags, ribbon) of an existing Thought Industries course shell. Drafts new copy from the course script where possible, asks the LXD to approve before writing, and never touches sections / lessons / topics. Does NOT create new course shells - use a separate creation skill for that."
 ---
@@ -68,7 +68,7 @@ If the LXD doesn't have either, run `/browse-TI-catalog --search "<partial title
 ## Step 2 — Fetch the current state
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/ti_metadata_updater.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/ti_metadata_updater.py" \
   --course-id "<either-ID>" \
   --show-current
 ```
@@ -162,7 +162,7 @@ fields - the API preserves any field not present in the payload, so a targeted u
 than a full-object replace.
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/ti_metadata_updater.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/ti_metadata_updater.py" \
   --course-id "<either-ID>" \
   --payload metadata_payload.json \
   --dry-run
@@ -182,7 +182,7 @@ Or pass the payload inline as JSON via `--json '<...>'`. The dry run prints:
 After the LXD approves the dry-run output:
 
 ```bash
-python "$CLAUDE_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/ti_metadata_updater.py" \
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/ti_metadata_updater.py" \
   --course-id "<either-ID>" \
   --payload metadata_payload.json
 ```

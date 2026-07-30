@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 check_update.py - SessionStart hook: check GitHub Releases for a plugin update.
 
@@ -15,8 +15,8 @@ import urllib.request
 from pathlib import Path
 
 PLUGIN_ROOT = (
-    Path(os.environ.get("CLAUDE_PLUGIN_ROOT", "")).resolve()
-    if os.environ.get("CLAUDE_PLUGIN_ROOT")
+    Path(os.environ.get("CONTENT_CREATION_PLUGIN_ROOT", "")).resolve()
+    if os.environ.get("CONTENT_CREATION_PLUGIN_ROOT")
     else None
 )
 
