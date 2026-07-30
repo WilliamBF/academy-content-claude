@@ -19,6 +19,31 @@ If `NOT_SET`: the plugin is not loaded. Tell the user and stop.
 
 ---
 
+## Step 0b -- Check that the plugin directory is writable
+
+```bash
+python -c "
+import os
+from pathlib import Path
+root = Path(os.environ['CLAUDE_PLUGIN_ROOT'])
+test = root / '.write_test'
+try:
+    test.touch(); test.unlink()
+    print('writable: yes')
+except OSError:
+    print('writable: no')
+"
+```
+
+If `writable: no`:
+> The plugin directory is read-only in this environment (Cowork sandbox). `/update-plugin`
+> must be run from **Claude Code desktop app** (Windows/macOS), not from a Cowork session.
+> The update check works here, but the actual file installation requires the desktop app.
+
+Then stop.
+
+---
+
 ## Step 1 -- Read the installed version and GitHub config
 
 ```bash

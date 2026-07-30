@@ -46,7 +46,8 @@ def main():
         print(f"WARNING: {settings_path} is not valid JSON -- creating a fresh one.")
         settings = {}
 
-    settings.setdefault("env", {})["CONTENT_CREATION_PLUGIN_ROOT"] = str(PLUGIN_ROOT)
+    settings.get("env", {}).pop("CONTENT_CREATION_PLUGIN_ROOT", None)
+    settings.setdefault("env", {})["CLAUDE_PLUGIN_ROOT"] = str(PLUGIN_ROOT)
 
     settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
 

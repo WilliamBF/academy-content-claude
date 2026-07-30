@@ -64,12 +64,27 @@ try:
             return (0,)
 
     if to_tuple(remote_tag) > to_tuple(local_version):
-        print(
-            f"[PLUGIN UPDATE CHECK] A new version of the content-creation-plugin is available: "
-            f"v{remote_tag} (installed: v{local_version}). "
-            f"Tell the user and ask if they want to update. "
-            f"If yes, run /update-plugin."
-        )
+        writable = True
+        try:
+            test = PLUGIN_ROOT / ".write_test"
+            test.touch()
+            test.unlink()
+        except OSError:
+            writable = False
+
+        if writable:
+            print(
+                f"[PLUGIN UPDATE CHECK] A new version of the content-creation-plugin is available: "
+                f"v{remote_tag} (installed: v{local_version}). "
+                f"Tell the user and ask if they want to update. If yes, run /update-plugin."
+            )
+        else:
+            print(
+                f"[PLUGIN UPDATE CHECK] A new version of the content-creation-plugin is available: "
+                f"v{remote_tag} (installed: v{local_version}). "
+                f"Tell the user, but note the plugin directory is read-only here (Cowork sandbox) "
+                f"so the update must be installed from Claude Code desktop app."
+            )
 
 except Exception:
     sys.exit(0)
