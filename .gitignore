@@ -1,13 +1,20 @@
-# Credentials
+# Credentials — never commit
 secrets.env
 **/secrets.env
 
 # Python
 *.pyc
+*.py[codz]
 __pycache__/
+.venv/
+venv/
+dist/
+*.egg-info/
 
 # Browser session cookies
 *.session.json
 
-# macOS
+# Editor / OS
 .DS_Store
+.vscode/
+.idea/
