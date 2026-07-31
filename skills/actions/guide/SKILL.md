@@ -11,24 +11,6 @@ and a clear recommendation, not a lecture.
 
 ---
 
-## Step 0 — Check the plugin environment
-
-Before anything else, verify the plugin is properly loaded by checking `CONTENT_CREATION_PLUGIN_ROOT`:
-
-```bash
-echo "${CONTENT_CREATION_PLUGIN_ROOT:-NOT_SET}"
-```
-
-If the output is `NOT_SET` (or empty), the plugin is not loaded in this session. Tell the user:
-
-> The plugin does not appear to be loaded. Make sure it is installed in Claude Code
-> (`/plugin list` to check), then start a new session.
-
-If `CONTENT_CREATION_PLUGIN_ROOT` is set, proceed. All skill scripts reference `$CONTENT_CREATION_PLUGIN_ROOT`
-directly — no additional setup is required for the paths to work.
-
----
-
 ## Step 1 — Read the workspace silently
 
 Before saying anything, scan the current working directory:
@@ -86,8 +68,7 @@ If credentials are missing, do NOT just tell the user to create the file manuall
 4. Write `secrets.env` to the workspace root with the provided values in `KEY=VALUE` format.
 5. Confirm: "✓ `secrets.env` created. Re-running status check..." then show the updated status
    with `found (workspace ✓)`.
-6. If the user declines, tell them: "Add `secrets.env` to your workspace root when ready
-   (see Step 5 for the template). TI-connected skills will fail until credentials are present."
+6. If the user declines, tell them: "Copy `secrets.env` to your workspace root when ready — the template is in Step 5 below. TI-connected skills will fail until credentials are present."
 
 ---
 
@@ -120,9 +101,9 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 | 7 | Upload the course to Thought Industries | `/upload-course-to-TI` |
 | 7b | Set course metadata: description, tags, ribbon, duration, level, feature, role | `/update-TI-course-metadata` |
 
-> **Image upload note:** The image upload step within `/convert-course-to-html` (running `image_uploader.py`)
-> uses Playwright and must be run in **Claude Code desktop/CLI** (macOS or Windows) — it cannot run in Cowork.
-> All other pipeline steps work in Cowork.
+> **Cowork note:** Steps 1–4e (content design, scripting, reviews) work fully in Cowork.
+> Steps 6–7 and `/update-plugin` run Python scripts and require **Claude Code desktop/CLI** (Windows/macOS).
+> The image upload within step 6 additionally requires Playwright, which is desktop-only.
 
 Steps 2a, 2b, and 3 can happen in any order. Steps 4 → 6 → 7 are sequential.
 Steps 3b and 4b–4e (reviews) are optional and can be run after any drafting step. Run `/review-course` for a full pass; run individual review skills for a single review type.
@@ -151,12 +132,19 @@ Only mention these when the user is about to run a TI-connected step:
 | `TI_LEARNER_EMAIL` | `/convert-course-to-html` image upload |
 | `TI_LEARNER_PASSWORD` | `/convert-course-to-html` image upload |
 
-**Standard setup:** Add `secrets.env` to your workspace root — this works everywhere, including
-container environments (e.g. Cowork). Run `python setup.py` from the plugin root to print the
-exact template.
+**Standard setup:** Copy `secrets.env` into your workspace root — this works everywhere, including Cowork and other container environments. No scripts needed; just place the file alongside your `courses/` folder.
+
+Template:
+```
+TI_BASE_URL=https://academy.celonis.com
+TI_API_KEY=<your api key>
+TI_LEARNER_EMAIL=claude.uploader@celonis.com
+TI_LEARNER_PASSWORD=<password>
+
+# Optional: plugin auto-update via GitHub Releases
+PLUGIN_UPDATE_GITHUB_REPO=<owner/repo>
+PLUGIN_UPDATE_GITHUB_TOKEN=<fine-grained-pat-with-contents-read>
+```
 
 A workspace-root `secrets.env` takes priority over `~/.claude/secrets.env` if both exist.
-For macOS/Windows users who want to avoid copying the file per project, creating
-`~/.claude/secrets.env` also works — but it does not persist in container environments.
-
-To print the exact `secrets.env` template, run `python "$CONTENT_CREATION_PLUGIN_ROOT/setup.py"` from any directory.
+For desktop-only setups, `~/.claude/secrets.env` also works as a global fallback — but it does not persist in Cowork.
