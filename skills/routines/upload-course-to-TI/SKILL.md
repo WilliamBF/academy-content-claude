@@ -32,15 +32,19 @@ Upload a standardised payload JSON to Thought Industries. Runs after `convert-co
 
 3. **Payload exists** — Confirm `upload_payload.json` (or a named equivalent) is present in `05_LMS_Sync/` for the course.
 
-4. **Course ID known** — Have the TI Course Shell UUID ready to pass via `--course-id`.
+4. **Course ID** — Either:
+   - Have the UUID of an existing shell ready to pass via `--course-id`, **OR**
+   - Add a `"course"` block to your `upload_payload.json` (see Payload JSON format below) — the script creates the shell automatically and prints the new course ID.
 
 ---
 
 ## Step 1 — Gather inputs
 
-You need two things:
+You need:
 - **Path to the payload JSON** — standardised `upload_payload.json` produced by any convert script
-- **Thought Industries Course ID** — the UUID of the existing course shell to populate (passed at runtime; never baked into the script)
+- **Thought Industries Course ID** — one of:
+  - The UUID of an existing shell (pass via `--course-id`), **OR**
+  - A `"course"` metadata block in the payload (omit `--course-id` and the script creates the shell first, then prints the new UUID)
 
 ---
 
@@ -59,13 +63,19 @@ Credentials come from environment variables (typically loaded from `secrets.env`
 Always validate before uploading to production:
 
 ```bash
+# With existing shell:
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
   --payload 05_LMS_Sync/upload_payload.json \
   --course-id <UUID> \
   --dry-run
+
+# With "course" block in payload (no --course-id):
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+  --payload 05_LMS_Sync/upload_payload.json \
+  --dry-run
 ```
 
-Dry run output shows: section count / lesson count / topic count, and any pending placeholder warnings. No API calls are made.
+Dry run output shows: section count / lesson count / topic count, and any pending placeholder warnings. If a `"course"` block is present, it prints `"Would create new course shell: <title>"`. No API calls are made.
 
 ---
 
@@ -87,9 +97,14 @@ This flag causes the uploader to exit with an error if `PENDING_CDN_UPLOAD` or `
 ## Step 5 — Upload
 
 ```bash
+# Upload to an existing shell:
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
   --payload 05_LMS_Sync/upload_payload.json \
   --course-id <UUID>
+
+# Create shell + upload in one command (payload must have a "course" block):
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_uploader.py" \
+  --payload 05_LMS_Sync/upload_payload.json
 ```
 
 The uploader will:
@@ -134,6 +149,24 @@ Every convert script must produce this structure:
   ]
 }
 ```
+
+**Optional: create the shell automatically.** Add a top-level `"course"` block and omit `--course-id` — the script calls `POST /incoming/v2/content/course/create` first, captures the returned UUID, then runs the normal upload phases against it:
+
+```json
+{
+  "course": {
+    "title": "Introduction to Marketing",
+    "sku": "MKT-101",
+    "kind": "courseGroup",
+    "discussionsEnabled": true
+  },
+  "sections": [...]
+}
+```
+
+- `kind` defaults to `"courseGroup"` if omitted.
+- `sku` must be unique in your TI instance.
+- The `"course"` block is ignored if `--course-id` is passed explicitly.
 
 **Body cleaning:** The uploader automatically strips time indicators like `[01:00]`, `[5 min]`, `[10 mins]` from topic bodies.
 

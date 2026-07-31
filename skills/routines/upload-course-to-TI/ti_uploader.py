@@ -74,6 +74,32 @@ def put_update(base_url, api_key, course_attributes: dict):
     return resp
 
 
+def create_course_shell(base_url: str, api_key: str, course_meta: dict) -> str:
+    """Create a new course shell via POST /incoming/v2/content/course/create.
+
+    Returns the new course UUID. Raises on API error.
+    Only pass metadata fields (title, sku, kind, etc.) — sections/lessons/topics
+    are intentionally excluded; content is uploaded via the iterative PUT phases.
+    """
+    url = f"{base_url}/incoming/v2/content/course/create"
+    body = {"courseAttributes": [course_meta]}
+    resp = requests.post(url, headers=headers(api_key), json=body, timeout=60)
+    if resp.status_code not in (200, 201):
+        print(f"  ERROR {resp.status_code}: {resp.text[:300]}")
+        resp.raise_for_status()
+    raw = resp.json()
+    # Unwrap common response envelopes
+    if isinstance(raw, dict):
+        for key in ("courseGroup", "course", "data"):
+            if key in raw and isinstance(raw[key], dict):
+                raw = raw[key]
+                break
+    course_id = raw.get("id") or raw.get("courseId") or raw.get("uuid")
+    if not course_id:
+        raise RuntimeError(f"Could not extract course ID from create response: {json.dumps(raw)[:300]}")
+    return str(course_id)
+
+
 def _unwrap_list(raw, key_hint: str = None) -> list:
     """
     TI API responses vary: flat list, or wrapped in a key like
@@ -303,7 +329,7 @@ def microcourse_upload(base_url, api_key, lesson_id: str, payload: dict):
 # Entrypoint
 # ---------------------------------------------------------------------------
 
-def run_upload(payload_path: str, course_id: str, dry_run: bool = False, check_pending: bool = False):
+def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, check_pending: bool = False):
     path = Path(payload_path)
     if not path.exists():
         print(f"ERROR: payload file not found: {path}")
@@ -311,6 +337,16 @@ def run_upload(payload_path: str, course_id: str, dry_run: bool = False, check_p
 
     with open(path, encoding="utf-8") as f:
         payload = json.load(f)
+
+    # Pull out the optional course metadata block before processing sections
+    course_meta = payload.pop("course", None)
+
+    # Validate: must have a course_id OR a course metadata block
+    if not course_id and not course_meta:
+        print("ERROR: --course-id is required unless the payload contains a top-level \"course\" block.")
+        print("  Add a \"course\" block to your payload JSON, e.g.:")
+        print('    {"course": {"title": "My Course", "sku": "SKU-001", "kind": "courseGroup"}, "sections": [...]}')
+        sys.exit(1)
 
     # Strip time indicators from all topic bodies
     strip_time_indicators(payload)
@@ -326,6 +362,10 @@ def run_upload(payload_path: str, course_id: str, dry_run: bool = False, check_p
     placeholders = find_placeholders(payload)
 
     if dry_run:
+        if course_meta and not course_id:
+            print(f"Would create new course shell: \"{course_meta.get('title', '?')}\" (sku: {course_meta.get('sku', '?')}, kind: {course_meta.get('kind', 'courseGroup')})")
+        else:
+            print(f"Course ID: {course_id}")
         print(f"Dry run -- {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)")
         if placeholders:
             print("\nWarnings (unresolved placeholders):")
@@ -347,12 +387,19 @@ def run_upload(payload_path: str, course_id: str, dry_run: bool = False, check_p
             print(w)
         print("Proceeding anyway -- use --check-pending to abort on warnings.")
 
-    print(f"Uploading {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)...")
     creds = resolve_credentials()
     base_url = creds["base_url"]
     api_key  = creds["api_key"]
     print(f"  TI_BASE_URL : {base_url}")
     print(f"  TI_API_KEY  : SET ({len(api_key)} chars)")
+
+    # Create course shell if no course_id was provided
+    if not course_id:
+        print(f"Creating new course shell: \"{course_meta.get('title', '?')}\" ...")
+        course_id = create_course_shell(base_url, api_key, course_meta)
+        print(f"  Created course shell -- ID: {course_id}")
+
+    print(f"Uploading {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s) to course {course_id}...")
 
     is_micro, lesson_id = phase0_detect(base_url, api_key, course_id)
 
@@ -372,18 +419,20 @@ def main():
     if len(sys.argv) == 1:
         print("content-creation-plugin -- TI uploader (interactive mode)")
         payload_path = input("Payload JSON path: ").strip()
-        course_id    = input("Course ID (UUID):  ").strip()
-        run_upload(payload_path, course_id)
+        cid = input("Course ID (UUID, or leave blank to create from payload): ").strip()
+        run_upload(payload_path, course_id=cid or None)
         return
 
     parser = argparse.ArgumentParser(description="Upload a course payload to Thought Industries")
     parser.add_argument("--payload",       required=True, help="Path to upload_payload.json")
-    parser.add_argument("--course-id",     required=True, help="TI course UUID (the shell to populate)")
+    parser.add_argument("--course-id",     default=None,
+                        help="TI course UUID (the shell to populate). "
+                             "If omitted, a new shell is created using the 'course' block in the payload JSON.")
     parser.add_argument("--dry-run",       action="store_true", help="Parse inputs and report without calling the API")
     parser.add_argument("--check-pending", action="store_true", help="Abort if PENDING_CDN_UPLOAD or WISTIA_MEDIA_ID_HERE found")
     args = parser.parse_args()
 
-    run_upload(args.payload, args.course_id, dry_run=args.dry_run, check_pending=args.check_pending)
+    run_upload(args.payload, course_id=args.course_id, dry_run=args.dry_run, check_pending=args.check_pending)
 
 
 if __name__ == "__main__":
