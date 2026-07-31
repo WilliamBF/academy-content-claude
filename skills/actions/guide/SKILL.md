@@ -111,6 +111,10 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 | 3 | Plan, outline, and draft course content | `/design-course-content` |
 | 3b | Send draft for review; collect and apply feedback | `/review-course-draft` |
 | 4 | Refine into a TI-ready script with widget markup | `/write-course-script` |
+| 4b | Full review pass: persona fit, ID quality, SME accuracy | `/review-course` |
+| 4c | Persona fit review only | `/evaluate-course-for-persona` |
+| 4d | Instructional design checklist review only | `/evaluate-course-for-id` |
+| 4e | SME / technical accuracy review only | `/evaluate-course-for-sme` |
 | 5 | Write qualification exam questions | `/write-exam-questions` |
 | 6 | Convert the script to TI-ready HTML | `/convert-course-to-html` |
 | 7 | Upload the course to Thought Industries | `/upload-course-to-TI` |
@@ -121,7 +125,7 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 > All other pipeline steps work in Cowork.
 
 Steps 2a, 2b, and 3 can happen in any order. Steps 4 → 6 → 7 are sequential.
-Step 3b (review) can be run after any drafting step and is optional.
+Steps 3b and 4b–4e (reviews) are optional and can be run after any drafting step. Run `/review-course` for a full pass; run individual review skills for a single review type.
 
 **Plugin updates:** Run `/update-plugin` at any time to check GitHub for a newer version and install it automatically. Session start also checks silently if `PLUGIN_UPDATE_GITHUB_REPO` and `PLUGIN_UPDATE_GITHUB_TOKEN` are configured in `secrets.env`.
 
