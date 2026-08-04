@@ -8,21 +8,27 @@ and outputs a one-line prompt to Claude only if an update is available.
 Exits silently on any error or missing config.
 """
 
+import glob
 import json
 import os
 import sys
 import urllib.request
 from pathlib import Path
 
-PLUGIN_ROOT = (
-    Path(os.environ.get("CONTENT_CREATION_PLUGIN_ROOT", "")).resolve()
-    if os.environ.get("CONTENT_CREATION_PLUGIN_ROOT")
-    else None
-)
+# Locate plugin root: env var first, then Cowork auto-detect
+_root_str = os.environ.get("CONTENT_CREATION_PLUGIN_ROOT", "").strip()
+if not _root_str:
+    _matches = sorted(glob.glob(
+        "/sessions/*/mnt/.local-plugins/marketplaces"
+        "/local-desktop-app-uploads/content-creation-plugin"
+    ))
+    if _matches:
+        _root_str = _matches[-1]
 
-if not PLUGIN_ROOT:
+if not _root_str:
     sys.exit(0)
 
+PLUGIN_ROOT = Path(_root_str).resolve()
 sys.path.insert(0, str(PLUGIN_ROOT))
 
 try:

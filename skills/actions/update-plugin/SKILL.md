@@ -9,13 +9,30 @@ Check the configured GitHub repository for a newer version of the plugin and ins
 
 ---
 
-## Step 0 -- Check the environment
+## Step 0 -- Locate the plugin root
 
 ```bash
-echo "${CONTENT_CREATION_PLUGIN_ROOT:-NOT_SET}"
+python -c "
+import glob, os
+from pathlib import Path
+root = os.environ.get('CONTENT_CREATION_PLUGIN_ROOT', '').strip()
+source = 'env'
+if not root:
+    matches = sorted(glob.glob('/sessions/*/mnt/.local-plugins/marketplaces/local-desktop-app-uploads/content-creation-plugin'))
+    if matches:
+        root = matches[-1]
+        source = 'auto-detected (Cowork)'
+if root and Path(root).is_dir():
+    print('plugin_root:', root)
+    print('source:', source)
+else:
+    print('plugin_root: NOT_FOUND')
+"
 ```
 
-If `NOT_SET`: the plugin is not loaded. Tell the user and stop.
+- If `NOT_FOUND`: the plugin is not loaded in this environment. Tell the user and stop.
+- If `source: auto-detected (Cowork)`: note "Running in Cowork — checking version now. File installation requires Claude Code desktop." Continue to Step 0b.
+- **Important:** use the printed `plugin_root` value in place of `os.environ['CONTENT_CREATION_PLUGIN_ROOT']` in all subsequent steps.
 
 ---
 
@@ -48,9 +65,13 @@ Then stop.
 
 ```bash
 python -c "
-import json, os, sys
+import glob, json, os, sys
 from pathlib import Path
-root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
+root_str = os.environ.get('CONTENT_CREATION_PLUGIN_ROOT', '').strip()
+if not root_str:
+    m = sorted(glob.glob('/sessions/*/mnt/.local-plugins/marketplaces/local-desktop-app-uploads/content-creation-plugin'))
+    if m: root_str = m[-1]
+root = Path(root_str)
 sys.path.insert(0, str(root))
 from lib.config import _load_env_file
 _load_env_file()
@@ -77,9 +98,13 @@ If `repo` or `token` is `NOT_CONFIGURED`:
 
 ```bash
 python -c "
-import json, os, sys, urllib.request
+import glob, json, os, sys, urllib.request
 from pathlib import Path
-root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
+root_str = os.environ.get('CONTENT_CREATION_PLUGIN_ROOT', '').strip()
+if not root_str:
+    m = sorted(glob.glob('/sessions/*/mnt/.local-plugins/marketplaces/local-desktop-app-uploads/content-creation-plugin'))
+    if m: root_str = m[-1]
+root = Path(root_str)
 sys.path.insert(0, str(root))
 from lib.config import _load_env_file
 _load_env_file()
@@ -135,9 +160,13 @@ Replace `ASSET_ID_FROM_STEP_2` with the asset ID printed in Step 2.
 
 ```bash
 python -c "
-import os, sys, tempfile, urllib.request
+import glob, os, sys, tempfile, urllib.request
 from pathlib import Path
-root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
+root_str = os.environ.get('CONTENT_CREATION_PLUGIN_ROOT', '').strip()
+if not root_str:
+    m = sorted(glob.glob('/sessions/*/mnt/.local-plugins/marketplaces/local-desktop-app-uploads/content-creation-plugin'))
+    if m: root_str = m[-1]
+root = Path(root_str)
 sys.path.insert(0, str(root))
 from lib.config import _load_env_file
 _load_env_file()
@@ -167,11 +196,15 @@ Replace `TEMP_ZIP_PATH` with the path printed in Step 5.
 
 ```bash
 python -c "
-import zipfile, os
+import datetime, glob, json, os, zipfile
 from pathlib import Path
 
 tmp_zip = 'TEMP_ZIP_PATH'
-plugin_root = Path(os.environ['CONTENT_CREATION_PLUGIN_ROOT'])
+root_str = os.environ.get('CONTENT_CREATION_PLUGIN_ROOT', '').strip()
+if not root_str:
+    m = sorted(glob.glob('/sessions/*/mnt/.local-plugins/marketplaces/local-desktop-app-uploads/content-creation-plugin'))
+    if m: root_str = m[-1]
+plugin_root = Path(root_str)
 
 with zipfile.ZipFile(tmp_zip) as z:
     members = z.namelist()
@@ -190,6 +223,31 @@ with zipfile.ZipFile(tmp_zip) as z:
 
 os.remove(tmp_zip)
 print('Installed to:', str(plugin_root))
+
+# Read the newly-installed version
+new_version = json.loads((plugin_root / '.claude-plugin' / 'plugin.json').read_text(encoding='utf-8'))['version']
+
+# Update installed_plugins.json (3 levels up: plugin-dir -> marketplace-name -> marketplaces -> plugins)
+installed_json = plugin_root.parent.parent.parent / 'installed_plugins.json'
+if installed_json.exists():
+    data = json.loads(installed_json.read_text(encoding='utf-8'))
+    key = 'content-creation-plugin@local-desktop-app-uploads'
+    now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    for entry in data.get('plugins', {}).get(key, []):
+        entry['version'] = new_version
+        entry['lastUpdated'] = now
+    installed_json.write_text(json.dumps(data, indent=2), encoding='utf-8')
+    print('  Updated installed_plugins.json ->', new_version)
+
+# Update marketplace catalog (sibling .claude-plugin/marketplace.json)
+mkt_json = plugin_root.parent / '.claude-plugin' / 'marketplace.json'
+if mkt_json.exists():
+    data = json.loads(mkt_json.read_text(encoding='utf-8'))
+    for p in data.get('plugins', []):
+        if p.get('name') == 'content-creation-plugin':
+            p['version'] = new_version
+    mkt_json.write_text(json.dumps(data, indent=2), encoding='utf-8')
+    print('  Updated marketplace.json ->', new_version)
 "
 ```
 
@@ -199,8 +257,9 @@ print('Installed to:', str(plugin_root))
 
 Tell the user:
 > Plugin updated to **v{remote_version}**. To activate the new version:
-> 1. Start a new Claude Code session (recommended), or
-> 2. Run `/reload-plugins` to reload skills in this session.
+> - **Claude Code desktop/CLI:** Start a new session, or run `/reload-plugins` in this one.
+> - **Cowork:** Simply open a new Cowork session — it automatically mounts the updated plugin
+>   files from the same path. No separate update step is needed in Cowork.
 
 ---
 

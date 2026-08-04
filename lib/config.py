@@ -9,8 +9,33 @@ Resolution order (first match wins):
 No config.json caching -- stateless on every call.
 """
 
+import glob
 import os
 import sys
+from pathlib import Path
+
+
+def find_plugin_root() -> "Path | None":
+    """
+    Locate the content-creation-plugin root directory.
+
+    Checks CONTENT_CREATION_PLUGIN_ROOT env var first, then falls back to
+    the Cowork Linux session mount path when the env var is not set.
+    Returns a Path object or None if not found.
+    """
+    root = os.environ.get("CONTENT_CREATION_PLUGIN_ROOT", "").strip()
+    if root and Path(root).is_dir():
+        return Path(root)
+
+    # Cowork mounts the plugin read-only at a predictable Linux path
+    matches = sorted(glob.glob(
+        "/sessions/*/mnt/.local-plugins/marketplaces"
+        "/local-desktop-app-uploads/content-creation-plugin"
+    ))
+    if matches:
+        return Path(matches[-1])
+
+    return None
 
 
 def _load_env_file(override: bool = False):
