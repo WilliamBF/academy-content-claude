@@ -88,7 +88,14 @@ def create_course_shell(base_url: str, api_key: str, course_meta: dict) -> str:
         print(f"  ERROR {resp.status_code}: {resp.text[:300]}")
         resp.raise_for_status()
     raw = resp.json()
-    # Unwrap common response envelopes
+    # Handle list-array response: {"courseIds": [...], "courseGroupIds": [...]}
+    if isinstance(raw, dict) and raw.get("courseIds") and isinstance(raw["courseIds"], list):
+        course_id = str(raw["courseIds"][0])
+        group_ids = raw.get("courseGroupIds", [])
+        if group_ids:
+            print(f"  Course group ID : {group_ids[0]}")
+        return course_id
+    # Unwrap common single-object envelopes
     if isinstance(raw, dict):
         for key in ("courseGroup", "course", "data"):
             if key in raw and isinstance(raw[key], dict):
@@ -213,6 +220,11 @@ def phase0_detect(base_url, api_key, course_id: str):
 
 def phase1_create_sections(base_url, api_key, course_id: str, payload: dict) -> dict:
     """Create sections; return {title: id} map."""
+    pre_existing = get_sections(base_url, api_key, course_id)
+    pre_existing_ids = {s.get("id") or s.get("sectionId") for s in pre_existing if isinstance(s, dict)}
+    if pre_existing_ids:
+        print(f"  Shell has {len(pre_existing_ids)} pre-existing section(s) — binding to newly created sections only")
+
     section_defs = [{"courseId": course_id, "title": s["title"]} for s in payload["sections"]]
     print(f"\nPhase 1 -- creating {len(section_defs)} section(s)...")
     for chunk in chunks(section_defs, SECTION_CHUNK):
@@ -222,8 +234,11 @@ def phase1_create_sections(base_url, api_key, course_id: str, payload: dict) -> 
     remote = get_sections(base_url, api_key, course_id)
     seen: dict[str, list] = {}
     for s in remote:
+        sid = s.get("id") or s.get("sectionId")
+        if sid in pre_existing_ids:
+            continue
         t = s.get("title", "")
-        seen.setdefault(t, []).append(s.get("id") or s.get("sectionId"))
+        seen.setdefault(t, []).append(sid)
 
     wanted = [s["title"] for s in payload["sections"]]
     id_map = {}
@@ -239,6 +254,11 @@ def phase1_create_sections(base_url, api_key, course_id: str, payload: dict) -> 
 
 def phase2_create_lessons(base_url, api_key, course_id: str, payload: dict, section_id_map: dict) -> dict:
     """Create lessons; return {(section_id, title): lesson_id} map."""
+    pre_existing = get_lessons(base_url, api_key, course_id)
+    pre_existing_ids = {les.get("id") or les.get("lessonId") for les in pre_existing if isinstance(les, dict)}
+    if pre_existing_ids:
+        print(f"  Shell has {len(pre_existing_ids)} pre-existing lesson(s) — binding to newly created lessons only")
+
     lesson_defs = []
     for sec in payload["sections"]:
         sid = section_id_map.get(sec["title"])
@@ -256,8 +276,11 @@ def phase2_create_lessons(base_url, api_key, course_id: str, payload: dict, sect
     remote = get_lessons(base_url, api_key, course_id)
     seen: dict[tuple, list] = {}
     for les in remote:
+        lid = les.get("id") or les.get("lessonId")
+        if lid in pre_existing_ids:
+            continue
         key = (les.get("sectionId"), les.get("title", ""))
-        seen.setdefault(key, []).append(les.get("id") or les.get("lessonId"))
+        seen.setdefault(key, []).append(lid)
 
     id_map = {}
     counters: dict[tuple, int] = {}
@@ -398,6 +421,12 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
         print(f"Creating new course shell: \"{course_meta.get('title', '?')}\" ...")
         course_id = create_course_shell(base_url, api_key, course_meta)
         print(f"  Created course shell -- ID: {course_id}")
+
+    if n_sections == 0 and n_lessons == 0:
+        print(f"  Course ID: {course_id}")
+        print("\nNo sections or lessons in payload -- skipping content upload phases.")
+        print("Upload complete -- 0 topic(s) created.")
+        return
 
     print(f"Uploading {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s) to course {course_id}...")
 
