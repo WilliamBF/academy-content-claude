@@ -74,37 +74,75 @@ def put_update(base_url, api_key, course_attributes: dict):
     return resp
 
 
-def create_course_shell(base_url: str, api_key: str, course_meta: dict) -> str:
-    """Create a new course shell via POST /incoming/v2/content/course/create.
-
-    Returns the new course UUID. Raises on API error.
-    Only pass metadata fields (title, sku, kind, etc.) — sections/lessons/topics
-    are intentionally excluded; content is uploaded via the iterative PUT phases.
-    """
-    url = f"{base_url}/incoming/v2/content/course/create"
-    body = {"courseAttributes": [course_meta]}
-    resp = requests.post(url, headers=headers(api_key), json=body, timeout=60)
-    if resp.status_code not in (200, 201):
-        print(f"  ERROR {resp.status_code}: {resp.text[:300]}")
-        resp.raise_for_status()
-    raw = resp.json()
-    # Handle list-array response: {"courseIds": [...], "courseGroupIds": [...]}
-    if isinstance(raw, dict) and raw.get("courseIds") and isinstance(raw["courseIds"], list):
+def _extract_course_id(raw: dict) -> str:
+    """Extract course UUID from a TI create response dict. Raises if not found."""
+    if raw.get("courseIds") and isinstance(raw["courseIds"], list):
         course_id = str(raw["courseIds"][0])
         group_ids = raw.get("courseGroupIds", [])
         if group_ids:
             print(f"  Course group ID : {group_ids[0]}")
         return course_id
     # Unwrap common single-object envelopes
-    if isinstance(raw, dict):
-        for key in ("courseGroup", "course", "data"):
-            if key in raw and isinstance(raw[key], dict):
-                raw = raw[key]
-                break
+    for key in ("courseGroup", "course", "data"):
+        if key in raw and isinstance(raw[key], dict):
+            raw = raw[key]
+            break
     course_id = raw.get("id") or raw.get("courseId") or raw.get("uuid")
     if not course_id:
         raise RuntimeError(f"Could not extract course ID from create response: {json.dumps(raw)[:300]}")
     return str(course_id)
+
+
+def create_course_shell(base_url: str, api_key: str, course_meta: dict) -> str:
+    """Create a new course shell (metadata only) via POST /incoming/v2/content/course/create.
+    Used for video kind courses and when uploading to an existing shell.
+    Returns the new course UUID.
+    """
+    url = f"{base_url}/incoming/v2/content/course/create"
+    resp = requests.post(url, headers=headers(api_key), json={"courseAttributes": [course_meta]}, timeout=60)
+    if resp.status_code not in (200, 201):
+        print(f"  ERROR {resp.status_code}: {resp.text[:300]}")
+        resp.raise_for_status()
+    return _extract_course_id(resp.json())
+
+
+def create_course_with_content(base_url: str, api_key: str, course_meta: dict, payload: dict) -> str:
+    """Create a courseGroup with all sections/lessons/topics in a single POST.
+    Adds openType='studentsOnly' to each lesson (required by the TI API for nested create).
+    Returns the new course UUID.
+    """
+    nested_sections = []
+    for sec in payload.get("sections", []):
+        nested_lessons = []
+        for les in sec.get("lessons", []):
+            lesson = {
+                "title": les["title"],
+                "openType": les.get("openType", "studentsOnly"),
+            }
+            topics = []
+            for top in les.get("topics", []):
+                t = {"title": top["title"], "type": top.get("type", "text")}
+                if top.get("body"):
+                    t["body"] = top["body"]
+                topics.append(t)
+            if topics:
+                lesson["topics"] = topics
+            nested_lessons.append(lesson)
+        section = {"title": sec["title"]}
+        if nested_lessons:
+            section["lessons"] = nested_lessons
+        nested_sections.append(section)
+
+    attrs = dict(course_meta)
+    if nested_sections:
+        attrs["sections"] = nested_sections
+
+    url = f"{base_url}/incoming/v2/content/course/create"
+    resp = requests.post(url, headers=headers(api_key), json={"courseAttributes": [attrs]}, timeout=60)
+    if resp.status_code not in (200, 201):
+        print(f"  ERROR {resp.status_code}: {resp.text[:300]}")
+        resp.raise_for_status()
+    return _extract_course_id(resp.json())
 
 
 def _unwrap_list(raw, key_hint: str = None) -> list:
@@ -386,10 +424,16 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
 
     if dry_run:
         if course_meta and not course_id:
-            print(f"Would create new course shell: \"{course_meta.get('title', '?')}\" (sku: {course_meta.get('sku', '?')}, kind: {course_meta.get('kind', 'courseGroup')})")
+            is_video = course_meta.get("kind") == "video"
+            if not is_video and n_sections > 0:
+                print(f"Would create course with all content in one call: \"{course_meta.get('title', '?')}\" "
+                      f"(sku: {course_meta.get('sku', '?')}, {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s))")
+            else:
+                print(f"Would create new course shell: \"{course_meta.get('title', '?')}\" "
+                      f"(sku: {course_meta.get('sku', '?')}, kind: {course_meta.get('kind', 'courseGroup')})")
         else:
             print(f"Course ID: {course_id}")
-        print(f"Dry run -- {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)")
+            print(f"Dry run -- {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)")
         if placeholders:
             print("\nWarnings (unresolved placeholders):")
             for w in placeholders:
@@ -416,11 +460,23 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
     print(f"  TI_BASE_URL : {base_url}")
     print(f"  TI_API_KEY  : SET ({len(api_key)} chars)")
 
-    # Create course shell if no course_id was provided
+    # Create course if no course_id was provided
     if not course_id:
-        print(f"Creating new course shell: \"{course_meta.get('title', '?')}\" ...")
-        course_id = create_course_shell(base_url, api_key, course_meta)
-        print(f"  Created course shell -- ID: {course_id}")
+        is_video = course_meta.get("kind") == "video"
+        if not is_video and n_sections > 0:
+            # courseGroup with content: create everything in one nested POST (bypasses iterative PUT phases)
+            print(f"Creating course \"{course_meta.get('title', '?')}\" with "
+                  f"{n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)...")
+            course_id = create_course_with_content(base_url, api_key, course_meta, payload)
+            print(f"  Created course -- ID: {course_id}")
+            print(f"\nUpload complete -- {n_topics} topic(s) created.")
+            print("\nNext step: run /update-TI-course-metadata to add tags and ribbon.")
+            return
+        else:
+            # Shell-only: video kind or no sections in payload
+            print(f"Creating new course shell: \"{course_meta.get('title', '?')}\" ...")
+            course_id = create_course_shell(base_url, api_key, course_meta)
+            print(f"  Created course shell -- ID: {course_id}")
 
     if n_sections == 0 and n_lessons == 0:
         print(f"  Course ID: {course_id}")

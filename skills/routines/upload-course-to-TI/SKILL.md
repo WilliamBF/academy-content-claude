@@ -108,6 +108,12 @@ python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_upl
 ```
 
 The uploader will:
+
+**New course (`"course"` block, no `--course-id`):**
+- `courseGroup` kind with sections → single `POST /create` with full nested content (sections + lessons + topics in one call)
+- `video` kind or no sections → creates the shell only, no content phases
+
+**Existing shell (`--course-id`):**
 1. Detect course type (MicroCourse vs standard)
 2. Create sections → fetch server IDs
 3. Create lessons → fetch server IDs
@@ -245,7 +251,18 @@ Video courses have no sections/lessons — they consist of a single embedded vid
 
 ## Step 6 — Upload internals (reference)
 
-The TI Incoming API v2 does NOT support nested creation in a single call. `ti_uploader.py` follows the mandatory iterative pattern:
+### Path A: New courseGroup with sections (nested create)
+
+When a `"course"` block is present and the payload has sections, `ti_uploader.py` calls `POST /incoming/v2/content/course/create` with sections, lessons, and topics nested inline — a single API call that creates everything at once. The `openType: "studentsOnly"` field is added automatically to each lesson (required by the API for nested creation). Phases 0–3 are skipped entirely.
+
+```
+POST /incoming/v2/content/course/create
+Body: {"courseAttributes": [{"title": "...", "sections": [{"title": "...", "lessons": [{"title": "...", "openType": "studentsOnly", "topics": [...]}]}]}]}
+```
+
+### Path B: Existing shell — iterative PUT phases
+
+When `--course-id` is passed (uploading to an existing shell), `ti_uploader.py` follows the iterative pattern:
 
 ### Phase 0: Detect course type
 
