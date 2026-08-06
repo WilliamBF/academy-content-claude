@@ -150,7 +150,13 @@ Every convert script must produce this structure:
 }
 ```
 
-**Optional: create the shell automatically.** Add a top-level `"course"` block and omit `--course-id` — the script calls `POST /incoming/v2/content/course/create` first, captures the returned UUID, then runs the normal upload phases against it:
+**Optional: create the shell automatically.** Add a top-level `"course"` block and omit `--course-id` — the script calls `POST /incoming/v2/content/course/create` first, captures the returned UUID, then runs the normal upload phases against it.
+
+- `kind` defaults to `"courseGroup"` if omitted.
+- `sku` must be unique in your TI instance.
+- The `"course"` block is ignored if `--course-id` is passed explicitly.
+
+### Standard course (`kind: courseGroup`)
 
 ```json
 {
@@ -158,15 +164,80 @@ Every convert script must produce this structure:
     "title": "Introduction to Marketing",
     "sku": "MKT-101",
     "kind": "courseGroup",
+    "description": "Learn the fundamentals of modern marketing.",
+    "metaTitle": "Introduction to Marketing | Celonis Academy",
+    "metaDescription": "Master modern marketing fundamentals in this hands-on course.",
+    "customFields": {
+      "duration": "1h",
+      "level": "Beginner",
+      "product": ["Studio", "Action Flows"],
+      "role": ["Data Analyst"]
+    },
     "discussionsEnabled": true
   },
   "sections": [...]
 }
 ```
 
-- `kind` defaults to `"courseGroup"` if omitted.
-- `sku` must be unique in your TI instance.
-- The `"course"` block is ignored if `--course-id` is passed explicitly.
+### Video kind course (`kind: video`)
+
+Video courses have no sections/lessons — they consist of a single embedded video plus optional text content. Leave out the `"sections"` key entirely.
+
+```json
+{
+  "course": {
+    "title": "Build Custom Visualizations Using Vega",
+    "sku": "Video_WhatIsVega_EN",
+    "kind": "video",
+    "videoAsset": "wi27fz29of",
+    "description": "Build custom JSON charts in Views.",
+    "metaTitle": "Build Custom Visualizations Using Vega | Celonis Academy",
+    "metaDescription": "Master custom data visualization in Celonis. Learn to build advanced charts using Vega-Lite and Vega JSON configurations.",
+    "customFields": {
+      "duration": "<30min",
+      "level": "Intermediate",
+      "product": ["View"],
+      "role": ["Data Analyst"]
+    },
+    "articleVariant": {
+      "body": "<p>Body text that appears below the video in TI admin.</p>"
+    }
+  }
+}
+```
+
+**Field reference for the `"course"` block:**
+
+| Field | Type | Notes |
+|---|---|---|
+| `title` | string | Required. The course title shown in the catalog. |
+| `sku` | string | Required. Must be unique in your TI instance. |
+| `kind` | string | `"courseGroup"` (default) or `"video"`. |
+| `videoAsset` | string | Wistia media ID. Only for `kind: video`. |
+| `description` | string | Catalog short description (~70 chars). |
+| `metaTitle` | string | SEO meta title for the course group page. |
+| `metaDescription` | string | SEO meta description (≤ 155 chars). |
+| `customFields.duration` | string | One of: `<30min`, `30min`, `30min - 1h`, `1h`, `1h - 1h 30`, `1h - 3h`, `3h+` |
+| `customFields.level` | string | One of: `Beginner`, `Intermediate`, `Advanced` |
+| `customFields.product` | array | Feature filter. Values: `Studio`, `Action Flows`, `Data Integration`, `AI`, `Apps`, `View`, `Analysis`, `PQL`, `OCPM`, `CPM` |
+| `customFields.role` | array | Audience filter. Values: `Data Analyst`, `Data Engineer`, `Value Architect`, `Transformation Lead`, `Project Manager`, `Celonis (CoE) Lead`, `Process Lead`, `Business User`, `Account Lead`, `Champion` |
+| `articleVariant.body` | string | HTML body shown below the video. **Can only be set at creation — cannot be updated via the Incoming API after the course is created.** |
+
+**What cannot be set via the Incoming API:**
+
+- **`source`** (Estimated Duration, in minutes) — set manually in TI admin after creation.
+- **Tags and ribbon** — use `/update-TI-course-metadata` after upload.
+- **`headline`, `subtitle`, `copyright`** (variant fields visible in TI admin) — the `/learn/articles/` endpoint that controls these requires browser session auth and is not accessible via the Incoming API Bearer key.
+
+**`preTextBlock` / `postTextBlock` (video courses):** Text rendered above/below the video player. These persist via PUT and can be set or updated after creation:
+
+```json
+{
+  "courseAttributes": {
+    "topics": [{"id": "<topic-uuid>", "preTextBlock": "<p>Above video</p>", "postTextBlock": "<p>Below video</p>"}]
+  }
+}
+```
 
 **Body cleaning:** The uploader automatically strips time indicators like `[01:00]`, `[5 min]`, `[10 mins]` from topic bodies.
 

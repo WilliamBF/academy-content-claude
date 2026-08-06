@@ -426,6 +426,7 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
         print(f"  Course ID: {course_id}")
         print("\nNo sections or lessons in payload -- skipping content upload phases.")
         print("Upload complete -- 0 topic(s) created.")
+        print("\nNext step: run /update-TI-course-metadata to add tags and ribbon.")
         return
 
     print(f"Uploading {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s) to course {course_id}...")
