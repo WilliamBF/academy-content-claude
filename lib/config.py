@@ -3,8 +3,9 @@ Credentials for content-creation-plugin.
 
 Resolution order (first match wins):
   1. secrets.env in the workspace root or any parent folder (up to 5 levels)
-  2. ~/.claude/secrets.env -- one-time central setup (create once, works from any workspace)
-  3. Existing environment variables (e.g. set in Claude Code settings.json)
+  2. {plugin_root}/secrets.env -- place once at install location, works in Cowork
+  3. ~/.claude/secrets.env -- desktop/macOS only (home dir is ephemeral in Cowork)
+  4. Existing environment variables (e.g. set in Claude Code settings.json)
 
 No config.json caching -- stateless on every call.
 """
@@ -63,7 +64,16 @@ def _load_env_file(override: bool = False):
         candidates.append(os.path.join(parent, ".env"))
         cwd = parent
 
-    # Central one-time setup location -- checked last so workspace files take priority
+    # Plugin install folder: persists in Cowork (mounted from Windows), works on desktop.
+    # setup.py already points users here — this closes the gap so scripts actually find it.
+    try:
+        plugin_root = find_plugin_root()
+        if plugin_root:
+            candidates.append(str(plugin_root / "secrets.env"))
+    except Exception:
+        pass
+
+    # Central user-level fallback (desktop only — ephemeral home in Cowork)
     candidates.append(os.path.join(os.path.expanduser("~"), ".claude", "secrets.env"))
 
     for filepath in candidates:
@@ -102,15 +112,19 @@ def resolve_credentials() -> dict:
     api_key = os.environ.get("TI_API_KEY", "").strip()
 
     if not base_url:
-        print("[ERROR] TI_BASE_URL not found.", file=sys.stderr)
-        print("        Add a secrets.env file to your workspace root (standard, works everywhere).", file=sys.stderr)
-        print("        Or create ~/.claude/secrets.env for persistent non-container setups (macOS/Windows).", file=sys.stderr)
+        print("[ERROR] TI_BASE_URL not found. Set credentials using one of:", file=sys.stderr)
+        print("  - secrets.env in the plugin install folder (works in Cowork — run python setup.py)", file=sys.stderr)
+        print("  - secrets.env in your workspace root (workspace-specific, always found)", file=sys.stderr)
+        print("  - ~/.claude/secrets.env (desktop / macOS only — ephemeral in Cowork)", file=sys.stderr)
+        print("  - TI_BASE_URL in Claude Code settings.json -> \"env\" block (no file needed)", file=sys.stderr)
         sys.exit(1)
 
     if not api_key:
-        print("[ERROR] TI_API_KEY not found.", file=sys.stderr)
-        print("        Add a secrets.env file to your workspace root (standard, works everywhere).", file=sys.stderr)
-        print("        Or create ~/.claude/secrets.env for persistent non-container setups (macOS/Windows).", file=sys.stderr)
+        print("[ERROR] TI_API_KEY not found. Set credentials using one of:", file=sys.stderr)
+        print("  - secrets.env in the plugin install folder (works in Cowork — run python setup.py)", file=sys.stderr)
+        print("  - secrets.env in your workspace root (workspace-specific, always found)", file=sys.stderr)
+        print("  - ~/.claude/secrets.env (desktop / macOS only — ephemeral in Cowork)", file=sys.stderr)
+        print("  - TI_API_KEY in Claude Code settings.json -> \"env\" block (no file needed)", file=sys.stderr)
         sys.exit(1)
 
     return {

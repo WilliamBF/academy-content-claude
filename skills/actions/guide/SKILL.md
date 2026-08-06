@@ -23,8 +23,10 @@ Before saying anything, scan the current working directory:
    - `04_Assets/` — images downloaded?
    - `05_LMS_Sync/` — upload payload ready?
 3. Do credentials exist? Check in order:
-   - `secrets.env` in the workspace root → standard location, works everywhere including containers
-   - `~/.claude/secrets.env` → optional convenience for persistent setups (macOS/Windows only)
+   - `secrets.env` in the workspace root → found by scripts as the first candidate
+   - `secrets.env` at the plugin install folder → persistent across Cowork sessions
+   - `~/.claude/secrets.env` → desktop/macOS only (ephemeral in Cowork)
+   - `TI_BASE_URL` already in environment → set via Claude Code `settings.json "env"` block (no file needed)
    At least one must be present for TI-connected steps.
 
 ---
@@ -49,8 +51,10 @@ secrets.env: found (workspace ✓)
 
 Show the credential status as one of:
 - `found (workspace ✓)` — `secrets.env` exists in the workspace root
-- `found (~/.claude ✓)` — `~/.claude/secrets.env` exists (workspace file not present)
-- `missing ✗` — neither location has a credentials file
+- `found (plugin folder ✓)` — `secrets.env` found at the plugin install folder
+- `found (~/.claude ✓)` — `~/.claude/secrets.env` exists (desktop only)
+- `found (settings.json ✓)` — `TI_BASE_URL` present in environment (no file)
+- `missing ✗` — no credentials found in any location
 
 If no `courses/` folder exists, say this looks like a fresh workspace and suggest starting
 with `/create-course-project`.
@@ -68,7 +72,7 @@ If credentials are missing, do NOT just tell the user to create the file manuall
 4. Write `secrets.env` to the workspace root with the provided values in `KEY=VALUE` format.
 5. Confirm: "✓ `secrets.env` created. Re-running status check..." then show the updated status
    with `found (workspace ✓)`.
-6. If the user declines, tell them: "Copy `secrets.env` to your workspace root when ready — the template is in Step 5 below. TI-connected skills will fail until credentials are present."
+6. If the user declines, point them to Step 5 for the full credential setup options (plugin folder is best for Cowork). TI-connected skills will fail until credentials are present.
 
 ---
 
@@ -132,9 +136,17 @@ Only mention these when the user is about to run a TI-connected step:
 | `TI_LEARNER_EMAIL` | `/convert-course-to-html` image upload |
 | `TI_LEARNER_PASSWORD` | `/convert-course-to-html` image upload |
 
-**Standard setup:** Copy `secrets.env` into your workspace root — this works everywhere, including Cowork and other container environments. No scripts needed; just place the file alongside your `courses/` folder.
+Scripts check these locations in order — first match wins:
 
-Template:
+| Setup | Where | Works in Cowork? | Notes |
+|---|---|---|---|
+| Workspace root | `secrets.env` in opened folder | ✓ | Per-project; found first |
+| Any ancestor | `secrets.env` in a parent folder | ✓ | Found by walking up from CWD |
+| Plugin install folder | `{plugin_root}/secrets.env` | ✓ | **Recommended for Cowork** — set once, persists across sessions and updates |
+| `settings.json` | `"env"` block (no file) | ✓ | Claude Code native, no file needed |
+| Home directory | `~/.claude/secrets.env` | ✗ | Desktop only, ephemeral in Cowork |
+
+Template (for any `secrets.env` location):
 ```
 TI_BASE_URL=https://academy.celonis.com
 TI_API_KEY=<your api key>
@@ -146,5 +158,4 @@ PLUGIN_UPDATE_GITHUB_REPO=<owner/repo>
 PLUGIN_UPDATE_GITHUB_TOKEN=<fine-grained-pat-with-contents-read>
 ```
 
-A workspace-root `secrets.env` takes priority over `~/.claude/secrets.env` if both exist.
-For desktop-only setups, `~/.claude/secrets.env` also works as a global fallback — but it does not persist in Cowork.
+Run `python setup.py` (from the plugin root) to confirm which location was found and see the exact path.

@@ -25,8 +25,9 @@ Payload JSON format:
 
 Credentials are resolved via lib/config.py, which checks (in order):
   1. secrets.env in workspace root or any parent folder (up to 5 levels)
-  2. ~/.claude/secrets.env (one-time central setup)
-  3. Existing environment variables
+  2. secrets.env in the plugin install folder (persists in Cowork)
+  3. ~/.claude/secrets.env (desktop only)
+  4. Existing environment variables (e.g. set in Claude Code settings.json)
 """
 
 import argparse

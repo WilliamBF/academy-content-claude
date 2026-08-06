@@ -50,11 +50,17 @@ You need:
 
 ## Step 2 — Resolve credentials
 
-Credentials come from environment variables (typically loaded from `secrets.env`):
-- `TI_BASE_URL` — e.g. `https://academy.celonis.com`
-- `TI_API_KEY` — Bearer token for the Incoming API
+`ti_uploader.py` resolves credentials automatically via `lib/config.py`. Credentials are never printed.
 
-`ti_uploader.py` resolves credentials automatically by calling `lib/config.py → resolve_credentials()`, then falling back to walking up the directory tree for a `secrets.env` or `.env` file. Never print credential values.
+| Setup | Where | Works in Cowork? | Notes |
+|---|---|---|---|
+| Plugin install folder | `{plugin_root}/secrets.env` | ✓ | Recommended — set once, persists across sessions and updates |
+| Workspace root | `secrets.env` in opened folder | ✓ | Per-project |
+| Any ancestor folder | `secrets.env` in a parent folder | ✓ | Found by walking up from CWD |
+| `settings.json` | `"env"` block (no file) | ✓ | Claude Code native, no file needed |
+| Home directory | `~/.claude/secrets.env` | ✗ | Desktop only, ephemeral in Cowork |
+
+Required variables: `TI_BASE_URL`, `TI_API_KEY`. Run `python setup.py` to check which location was found.
 
 ---
 

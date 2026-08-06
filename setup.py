@@ -15,26 +15,28 @@ PLUGIN_ROOT = pathlib.Path(__file__).resolve().parent
 
 
 def main():
-    workspace_creds = PLUGIN_ROOT / "secrets.env"
+    plugin_creds = PLUGIN_ROOT / "secrets.env"
     home_creds = pathlib.Path.home() / ".claude" / "secrets.env"
 
     print("-" * 61)
     print("content-creation-plugin — credentials check")
     print("-" * 61)
 
-    if workspace_creds.exists():
-        print(f"OK  secrets.env found at {workspace_creds}")
+    if plugin_creds.exists():
+        print(f"OK  secrets.env found at {plugin_creds}")
         print("    All TI-connected skills will use it automatically.")
+        print("    This location persists across Cowork sessions and plugin updates.")
     elif home_creds.exists():
         print(f"OK  secrets.env found at {home_creds}")
-        print("    Note: this location does not persist in Cowork / container")
-        print("    environments. Copy to your workspace root if you use Cowork.")
+        print("    Note: home directory is ephemeral in Cowork / container environments.")
+        print("    For a persistent setup, copy secrets.env to the plugin install folder:")
+        print(f"    {plugin_creds}")
     else:
         print("MISSING  No secrets.env found.")
         print()
-        print("Create one at your workspace root:")
+        print("Option 1 — Plugin install folder (recommended, persists in Cowork):")
         print()
-        print(f"  {PLUGIN_ROOT / 'secrets.env'}")
+        print(f"  {plugin_creds}")
         print()
         print("  TI_BASE_URL=https://academy.celonis.com")
         print("  TI_API_KEY=<your api key>")
@@ -44,6 +46,15 @@ def main():
         print("  # Optional: plugin auto-update via GitHub Releases")
         print("  PLUGIN_UPDATE_GITHUB_REPO=<owner/repo>")
         print("  PLUGIN_UPDATE_GITHUB_TOKEN=<fine-grained-pat-with-contents-read>")
+        print()
+        print("Option 2 — No file (Claude Code settings.json, any environment):")
+        print()
+        print("  Add these variables to settings.json under the \"env\" key:")
+        print("    TI_BASE_URL, TI_API_KEY, TI_LEARNER_EMAIL, TI_LEARNER_PASSWORD")
+        print()
+        print("Option 3 — Workspace root (per-project, works everywhere):")
+        print()
+        print("  Place secrets.env in the folder you open as your workspace.")
 
     print("-" * 61)
 

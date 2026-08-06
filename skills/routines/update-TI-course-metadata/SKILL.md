@@ -53,6 +53,22 @@ live course):
 
 ---
 
+## Credentials
+
+`ti_metadata_updater.py` resolves credentials automatically via `lib/config.py`. Credentials are never printed.
+
+| Setup | Where | Works in Cowork? | Notes |
+|---|---|---|---|
+| Plugin install folder | `{plugin_root}/secrets.env` | ✓ | Recommended — set once, persists across sessions and updates |
+| Workspace root | `secrets.env` in opened folder | ✓ | Per-project |
+| Any ancestor folder | `secrets.env` in a parent folder | ✓ | Found by walking up from CWD |
+| `settings.json` | `"env"` block (no file) | ✓ | Claude Code native, no file needed |
+| Home directory | `~/.claude/secrets.env` | ✗ | Desktop only, ephemeral in Cowork |
+
+Required variables: `TI_BASE_URL`, `TI_API_KEY`. Run `python setup.py` to check which location was found.
+
+---
+
 ## Step 1 — Identify the course
 
 Ask the LXD for **either** identifier - the script auto-resolves whichever is provided:
