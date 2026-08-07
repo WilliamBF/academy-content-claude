@@ -1,6 +1,6 @@
 ﻿---
 name: "extract-TI-course"
-description: "Extract an existing course from Thought Industries and save it as structured .md files organised by section, lesson, and topic for use as reference material."
+description: "Extract an existing Thought Industries course and save it as structured .md files organised by section, lesson, and topic. Accepts a TI admin UUID, an academy.celonis.com course URL, or a bare slug. Trigger on: 'pull/extract/download course content', 'get content from academy.celonis.com/…', 'extract this course for reference', 'save this TI course as reference material'."
 ---
 
 # Extract TI Course
