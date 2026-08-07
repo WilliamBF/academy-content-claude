@@ -1,6 +1,6 @@
 ﻿---
 name: "upload-course-to-TI"
-description: "Upload a course payload JSON to Thought Industries via the Incoming API — creates sections, lessons, and topics in the correct order."
+description: "Upload a course payload JSON to Thought Industries (TI) via the Incoming API — creates sections, lessons, and topics in the correct order. Trigger on: 'upload/push/send to TI', 'push this to TI', 'publish to Thought Industries', 'upload the course', 'send the payload to TI'."
 ---
 
 # Upload Course to TI
