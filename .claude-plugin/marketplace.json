@@ -9,7 +9,7 @@
       "name": "content-creation-plugin",
       "source": "./",
       "description": "Author, transform, and publish Celonis Academy courses to Thought Industries — course design, script writing, HTML conversion, image upload, and LMS publishing.",
-      "version": "2.23.0",
+      "version": "2.24.0",
       "author": {
         "name": "Celonis Academy Team"
       }

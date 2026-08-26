@@ -403,6 +403,14 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
     # Pull out the optional course metadata block before processing sections
     course_meta = payload.pop("course", None)
 
+    # Validate SKU length before touching the API
+    if course_meta:
+        sku = course_meta.get("sku", "")
+        if sku and len(sku) > 36:
+            print(f"ERROR: 'sku' must be ≤ 36 characters (got {len(sku)}: '{sku}').")
+            print("       Shorten the SKU and re-run.")
+            sys.exit(1)
+
     # Validate: must have a course_id OR a course metadata block
     if not course_id and not course_meta:
         print("ERROR: --course-id is required unless the payload contains a top-level \"course\" block.")
@@ -425,8 +433,8 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
 
     if dry_run:
         if course_meta and not course_id:
-            is_video = course_meta.get("kind") == "video"
-            if not is_video and n_sections > 0:
+            is_shell_only = course_meta.get("kind") in ("video", "article")
+            if not is_shell_only and n_sections > 0:
                 print(f"Would create course with all content in one call: \"{course_meta.get('title', '?')}\" "
                       f"(sku: {course_meta.get('sku', '?')}, {n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s))")
             else:
@@ -463,8 +471,8 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
 
     # Create course if no course_id was provided
     if not course_id:
-        is_video = course_meta.get("kind") == "video"
-        if not is_video and n_sections > 0:
+        is_shell_only = course_meta.get("kind") in ("video", "article")
+        if not is_shell_only and n_sections > 0:
             # courseGroup with content: create everything in one nested POST (bypasses iterative PUT phases)
             print(f"Creating course \"{course_meta.get('title', '?')}\" with "
                   f"{n_sections} section(s), {n_lessons} lesson(s), {n_topics} topic(s)...")

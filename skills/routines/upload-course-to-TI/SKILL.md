@@ -117,7 +117,7 @@ The uploader will:
 
 **New course (`"course"` block, no `--course-id`):**
 - `courseGroup` kind with sections → single `POST /create` with full nested content (sections + lessons + topics in one call)
-- `video` kind or no sections → creates the shell only, no content phases
+- `video` or `article` kind, or no sections → creates the shell only, no content phases
 
 **Existing shell (`--course-id`):**
 1. Detect course type (MicroCourse vs standard)
@@ -164,8 +164,8 @@ Every convert script must produce this structure:
 
 **Optional: create the shell automatically.** Add a top-level `"course"` block and omit `--course-id` — the script calls `POST /incoming/v2/content/course/create` first, captures the returned UUID, then runs the normal upload phases against it.
 
-- `kind` defaults to `"courseGroup"` if omitted.
-- `sku` must be unique in your TI instance.
+- `kind` defaults to `"courseGroup"` if omitted. Use `"video"` for a single video course, `"article"` for a standalone article/page.
+- `sku` must be unique in your TI instance and **≤ 36 characters**.
 - The `"course"` block is ignored if `--course-id` is passed explicitly.
 
 ### Standard course (`kind: courseGroup`)
@@ -218,13 +218,37 @@ Video courses have no sections/lessons — they consist of a single embedded vid
 }
 ```
 
+### Article (`kind: article`)
+
+Articles are standalone searchable catalog pages with a rich HTML body. They have no sections or lessons. Omit the `"sections"` key entirely. `contentType` must be `"Article"` (most common) or `"Page"`.
+
+```json
+{
+  "course": {
+    "title": "What Is Process Mining?",
+    "sku": "Article_WhatIsProcessMining_EN",
+    "kind": "article",
+    "contentType": "Article",
+    "description": "A quick primer on process mining concepts.",
+    "metaTitle": "What Is Process Mining? | Celonis Academy",
+    "metaDescription": "Learn what process mining is and how it works in Celonis.",
+    "articleVariant": {
+      "body": "<h2>Introduction</h2><p>Process mining is...</p>"
+    }
+  }
+}
+```
+
+After creation the script prints the **Course Group ID** — you need this to set the slug via a subsequent `PUT /incoming/v2/content/course/update` targeting `courseGroups[{id: <courseGroupId>}]`.
+
 **Field reference for the `"course"` block:**
 
 | Field | Type | Notes |
 |---|---|---|
 | `title` | string | Required. The course title shown in the catalog. |
-| `sku` | string | Required. Must be unique in your TI instance. |
-| `kind` | string | `"courseGroup"` (default) or `"video"`. |
+| `sku` | string | Required. Must be unique in your TI instance. **Max 36 characters.** |
+| `kind` | string | `"courseGroup"` (default), `"video"`, or `"article"`. |
+| `contentType` | string | Required for `kind: article`. Use `"Article"` (most common) or `"Page"`. |
 | `videoAsset` | string | Wistia media ID. Only for `kind: video`. |
 | `description` | string | Catalog short description (~70 chars). |
 | `metaTitle` | string | SEO meta title for the course group page. |
@@ -233,7 +257,7 @@ Video courses have no sections/lessons — they consist of a single embedded vid
 | `customFields.level` | string | One of: `Beginner`, `Intermediate`, `Advanced` |
 | `customFields.product` | array | Feature filter. Values: `Studio`, `Action Flows`, `Data Integration`, `AI`, `Apps`, `View`, `Analysis`, `PQL`, `OCPM`, `CPM` |
 | `customFields.role` | array | Audience filter. Values: `Data Analyst`, `Data Engineer`, `Value Architect`, `Transformation Lead`, `Project Manager`, `Celonis (CoE) Lead`, `Process Lead`, `Business User`, `Account Lead`, `Champion` |
-| `articleVariant.body` | string | HTML body shown below the video. **Can only be set at creation — cannot be updated via the Incoming API after the course is created.** |
+| `articleVariant.body` | string | HTML body. For `kind: article`, this is the article page content. For `kind: video`, this is text shown below the video in TI admin. **Set at creation only — cannot be updated via the Incoming API after the course is created.** |
 
 **What cannot be set via the Incoming API:**
 

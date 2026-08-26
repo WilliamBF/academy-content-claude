@@ -9,6 +9,11 @@ Targeted update of one or more topics, lessons, or sections in TI using their UU
 when a course is already live and you need to fix a specific page, rename a lesson, or correct
 body HTML without re-uploading the whole course.
 
+**A topic is any individual page within a course** — a text/HTML page, a video page, a PDF
+page, an audio page, or any structured interactive page. Topics live inside lessons, which live
+inside sections. This skill can update a topic in ANY course, including large multi-section
+courses with many lessons.
+
 **Prerequisite:** you must know the UUID of the entity to update. Use `/extract-TI-course` or
 `/get-TI-course-structure` first if you don't have the IDs.
 
@@ -38,15 +43,39 @@ entity or entities you want to update.
 
 ## Step 3 — Build the update payload
 
-Construct the JSON payload. Include only the fields you want to change alongside the `id`:
+Construct the JSON payload. Include only the fields you want to change alongside the `id`.
 
-**Update a topic body:**
+**Update a topic's HTML body (most common use case):**
 ```json
 {
   "courseAttributes": {
     "topics": [
       { "id": "<topic_uuid>", "body": "<p>Updated HTML content here</p>" }
     ]
+  }
+}
+```
+
+**Update pre/post framing text on a topic (shown above/below the main content or video):**
+```json
+{
+  "courseAttributes": {
+    "topics": [
+      {
+        "id": "<topic_uuid>",
+        "preTextBlock": "<p>Before you start, make sure you have...</p>",
+        "postTextBlock": "<p>Now that you've finished, try the next exercise.</p>"
+      }
+    ]
+  }
+}
+```
+
+**Replace the video on a topic:**
+```json
+{
+  "courseAttributes": {
+    "topics": [{ "id": "<topic_uuid>", "videoAsset": "<wistia_media_id>" }]
   }
 }
 ```
@@ -76,6 +105,31 @@ Construct the JSON payload. Include only the fields you want to change alongside
 
 Every entity **must** include its `id` UUID. The script will exit with an error if any entity
 is missing an id.
+
+### Supported topic fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID | Required |
+| `title` | string | Topic title |
+| `body` | string | HTML content displayed on the page (text pages, article pages, etc.) |
+| `preTextBlock` | string | HTML shown above the main content or video player |
+| `postTextBlock` | string | HTML shown below the main content or video player |
+| `videoAsset` | string | Wistia media ID or Synthesia UUID |
+| `assetType` | string | `"wistia"` (default) or `"synthesia"` |
+| `videoUrl` | URL | External video URL — uploaded to Wistia by a background job |
+| `caption` | string | Caption text |
+| `pdfUrl` | URL | URL to PDF file |
+| `audioUrl` | URL | URL to audio file (MP3/WAV/OGG, max 200 MB) |
+| `posterImageAsset` | URL | Poster image shown before the video plays |
+| `preAsset` | string | Wistia media ID for a pre-roll video |
+| `postAsset` | string | Wistia media ID for a post-roll video |
+| `width` / `height` | integer | Display dimensions in pixels |
+| `searchDisabled` | boolean | Exclude from search |
+| `preventProgression` | boolean | Block progression until the page is completed |
+| `embeddedEnabled` | boolean | Allow embedded display |
+
+The API accepts up to **100 total items** (topics + lessons + sections combined) per call.
 
 ---
 
@@ -123,5 +177,5 @@ updated page visually.
   Do not include `<html>`, `<head>`, or `<body>` wrapper tags.
 - After updating, the change is live immediately in TI. There is no staging environment.
 - To update catalog-level fields (description, SEO meta title/description, tags, ribbon, duration,
-  level, feature, role), use `/update-TI-course-metadata` instead. This skill only edits body
-  HTML, lesson titles, and section structure.
+  level, feature, role), use `/update-TI-course-metadata` instead. This skill handles topic body
+  HTML, pre/post text, video assets, and lesson/section titles — see the field table in Step 3.

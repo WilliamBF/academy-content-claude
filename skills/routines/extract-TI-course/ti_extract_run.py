@@ -172,6 +172,32 @@ def get_full_content(base_url: str, api_key: str, course_id: str) -> dict:
 
 # -- Flat dot-notation parser ---------------------------------------------------
 
+def _set_nested_path(obj, keys, value):
+    """Recursively set a value at an alternating string/integer key path.
+
+    String keys → dict fields. Numeric-string keys → list indices (list created if absent).
+    Example: keys=['expandableLists','0','expandableListItems','0','title'] value='Foo'
+    sets obj['expandableLists'][0]['expandableListItems'][0]['title'] = 'Foo'
+    """
+    if len(keys) == 1:
+        obj[keys[0]] = value
+        return
+    k = keys[0]
+    rest = keys[1:]
+    if rest[0].isdigit():
+        idx = int(rest[0])
+        if k not in obj:
+            obj[k] = []
+        lst = obj[k]
+        while len(lst) <= idx:
+            lst.append({})
+        _set_nested_path(lst[idx], rest[1:], value)
+    else:
+        if k not in obj:
+            obj[k] = {}
+        _set_nested_path(obj[k], rest, value)
+
+
 def parse_flat_response(flat: dict) -> list:
     """Convert TI fullContent response to a nested sections list.
 
@@ -203,14 +229,19 @@ def parse_flat_response(flat: dict) -> list:
                 sections[i]["lessons"].setdefault(j, {"topics": {}})
                 sections[i]["lessons"][j][parts[4]] = value
 
-            elif (len(parts) == 7 and parts[0] == "section"
+            elif (len(parts) >= 7 and parts[0] == "section"
                   and parts[2] == "lesson" and parts[4] == "topic"):
-                # section.{i}.lesson.{j}.topic.{k}.{field}
+                # section.{i}.lesson.{j}.topic.{k}.{field}[.{sub-array paths}...]
                 i, j, k = int(parts[1]), int(parts[3]), int(parts[5])
                 sections.setdefault(i, {"lessons": {}})
                 sections[i]["lessons"].setdefault(j, {"topics": {}})
                 sections[i]["lessons"][j]["topics"].setdefault(k, {})
-                sections[i]["lessons"][j]["topics"][k][parts[6]] = value
+                topic = sections[i]["lessons"][j]["topics"][k]
+                if len(parts) == 7:
+                    topic[parts[6]] = value
+                else:
+                    # Sub-array fields: expandableLists.0.title, slides.0.caption, etc.
+                    _set_nested_path(topic, parts[6:], value)
 
         except (ValueError, IndexError):
             continue
@@ -267,14 +298,16 @@ def extract_and_enrich(base_url, api_key, course_id, course_title, cg_id):
                 # Try multiple possible body field names
                 body = (top.get("body") or top.get("bodyHtml") or
                         top.get("content") or top.get("bodyContent") or "")
-                topics_out.append({
+                # Preserve ALL raw fields so page handlers (ListRollPage, FlipCardPage, etc.)
+                # receive sub-arrays (expandableLists, slides, flipCards, …).
+                topic_entry = {
+                    **top,
                     "__typename": type_to_typename(t_type),
-                    "id": top.get("id", ""),
-                    "title": top.get("title", ""),
                     "type": t_type,
                     "body": body,
                     "lessonId": les_id,
-                })
+                }
+                topics_out.append(topic_entry)
                 total_topics += 1
                 if body:
                     topics_with_body += 1
