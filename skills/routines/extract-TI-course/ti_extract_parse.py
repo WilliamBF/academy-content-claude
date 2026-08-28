@@ -368,6 +368,49 @@ def topic_content(t):
 
 # -- main -----------------------------------------------------------------------
 
+def _write_learning_path(lp: dict, out_base_root: Path):
+    """Write a learning path _index.md listing milestones and courses."""
+    name = lp.get("name") or lp.get("title") or "learning-path"
+    slug = slugify(name)
+    out_base = out_base_root / slug
+    out_base.mkdir(parents=True, exist_ok=True)
+
+    lines = [f"# {name} (Learning Path)", ""]
+    if lp.get("shortDescription"):
+        lines += [lp["shortDescription"], ""]
+    lines += [f"**ID:** `{lp['id']}`", "", "---", ""]
+
+    milestones = lp.get("milestones", [])
+    for idx, ms in enumerate(milestones, 1):
+        lines.append(f"## Milestone {idx}: {ms.get('name', '(untitled)')}")
+        lines.append("")
+        courses = ms.get("courses", [])
+        if courses:
+            lines.append("| Title | Course ID |")
+            lines.append("|---|---|")
+            for c in courses:
+                title = c.get("title", "(untitled)")
+                cid = c.get("id", "")
+                desc = c.get("description", "")
+                lines.append(f"| {title} | `{cid}` |")
+                if desc:
+                    lines.append(f"| *{desc[:120]}* | |")
+        lines.append("")
+
+    lines.append(
+        "> To extract the full content of any course listed above, run:\n"
+        "> `/extract-TI-course` with the Course ID shown in the table."
+    )
+
+    n_courses = sum(len(m.get("courses", [])) for m in milestones)
+    out_path = out_base / "_index.md"
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+
+    print(f"Learning path: {name}")
+    print(f"Milestones: {len(milestones)}  |  Courses: {n_courses}")
+    print(f"Output: {out_path}")
+
+
 def main():
     if len(sys.argv) != 3:
         print("Usage: python ti_extract_parse.py <raw_json_path> <output_dir>")
@@ -384,6 +427,12 @@ def main():
         data = json.loads(outer[0]["text"])
     else:
         data = outer
+
+    # Detect learning path vs course envelope
+    lp = data.get("data", {}).get("LearningPath")
+    if lp:
+        _write_learning_path(lp, out_base_root)
+        return
 
     cg = data["data"]["CourseGroupBySlug"]
     course_title = cg["title"]

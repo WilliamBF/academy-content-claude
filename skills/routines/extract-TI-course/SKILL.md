@@ -1,12 +1,12 @@
 ﻿---
 name: "extract-TI-course"
-description: "Extract an existing Thought Industries course and save it as structured .md files organised by section, lesson, and topic. Accepts a TI admin UUID, an academy.celonis.com course URL, or a bare slug. Trigger on: 'pull/extract/download course content', 'get content from academy.celonis.com/…', 'extract this course for reference', 'save this TI course as reference material'."
+description: "Extract an existing Thought Industries course or learning path and save it as structured .md files. Accepts a TI admin UUID, an academy.celonis.com course URL, a learning-path URL, or a bare slug. Trigger on: 'pull/extract/download course content', 'get content from academy.celonis.com/…', 'extract this course for reference', 'extract this learning path', 'save this TI course as reference material'."
 ---
 
-# Extract TI Course
+# Extract TI Course or Learning Path
 
-Extract an existing course from the TI LMS. Produces clean `.md` reference files organised by
-section/lesson/topic hierarchy. Uses the REST API (bearer-token auth — no API key exposed in URLs).
+Extract an existing course or learning path from the TI LMS. Produces clean `.md` reference
+files. Uses the REST API (bearer-token auth — no API key exposed in URLs).
 
 Uses two co-located scripts: `ti_extract_run.py` (fetch) and `ti_extract_parse.py` (parse).
 
@@ -14,29 +14,34 @@ Uses two co-located scripts: `ti_extract_run.py` (fetch) and `ti_extract_parse.p
 
 ## Step 1 — Ask for inputs
 
-1. **Course identifier** — ask the user to provide one of:
-   - **UUID from TI admin URL (preferred)** — open the course in TI admin
+1. **Course or learning path identifier** — ask the user to provide one of:
+   - **UUID from TI admin URL (preferred for courses)** — open the course in TI admin
      (`/admin/courseGroups/{UUID}/edit`) and copy the UUID from the URL.
      Pass it as `--course-id`; the script automatically resolves it to the
      correct course UUID via `displayCourse` before fetching content.
-   - A full Academy URL — extract the slug and run a two-call lookup (see below).
-   - A bare slug, e.g. `connect` or `data-integration-basics` — also uses the two-call lookup.
+   - A full Academy course URL — extract the slug and run a two-call lookup (see below).
+   - A bare course slug, e.g. `connect` or `data-integration-basics`.
+   - **A full learning path URL** — if the URL contains `/learning-path/`, extract the slug and
+     use `--learning-path`. The script resolves it via the List Content endpoint.
+   - A bare learning path slug or learning path UUID — pass as `--learning-path`.
 
 2. **Output folder** — default: `courses/<slug>/01_Source_Material/LMS_Reference/`
 
 ### URL → Slug extraction rules
 
-If the user provides a URL, extract the slug before running the lookup:
-
-| URL pattern | Slug extraction |
-|---|---|
-| `…/courses/<slug>` | Everything after `courses/` (strip trailing slash) |
-| `…/learn/course/<slug>/…` | Segment immediately after `course/` (up to next `/`) |
-| No URL pattern match | Treat the entire input as a bare slug |
+| URL pattern | What to extract | Flag to use |
+|---|---|---|
+| `…/courses/<slug>` | After `courses/` | `--slug` |
+| `…/learn/course/<slug>/…` | Segment after `course/` | `--slug` |
+| `…/learning-path/<slug>` | After `learning-path/` | `--learning-path` |
+| No URL pattern match | Treat as a bare course slug | `--slug` |
 
 **Examples:**
-- `https://academy.celonis.com/courses/process-mining-key-concepts` → `process-mining-key-concepts`
-- `https://academy.celonis.com/learn/course/ai-foundations/section-1/lesson-1` → `ai-foundations`
+- `https://academy.celonis.com/courses/process-mining-key-concepts` → `--slug process-mining-key-concepts`
+- `https://academy.celonis.com/learn/course/ai-foundations/section-1/lesson-1` → `--slug ai-foundations`
+- `https://academy.celonis.com/learning-path/data-analyst-foundations` → `--learning-path data-analyst-foundations`
+
+You can also pass a full URL directly to `--learning-path` — the script strips the slug automatically.
 
 Confirm the extracted slug (or UUID) with the user before proceeding.
 
@@ -50,38 +55,42 @@ Confirm the extracted slug (or UUID) with the user before proceeding.
 
 ---
 
-## Step 3 — Fetch the course JSON
+## Step 3 — Fetch the course or learning path JSON
 
-Using a slug:
+**Course — using a slug:**
 ```bash
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
   --slug "<slug>" \
   --output "<raw_json_path>"
 ```
 
-Using a course UUID (preferred):
+**Course — using a UUID (preferred):**
 ```bash
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
   --course-id "<uuid>" \
   --output "<raw_json_path>"
 ```
 
+**Learning path — slug, UUID, or full URL:**
+```bash
+python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/extract-TI-course/ti_extract_run.py" \
+  --learning-path "<slug_or_uuid_or_full_url>" \
+  --output "<raw_json_path>"
+```
+
 Credentials are resolved automatically via `lib/config.py` (env vars or `secrets.env`).
 The API key is sent as a bearer token header — not embedded in any URL.
 
-Fetches `GET /incoming/v2/fullContent/courses/{id}` — returns the complete course tree
-including topic body HTML in a single call. No pagination.
+**Course fetching:** calls `GET /incoming/v2/fullContent/courses/{id}` — returns the complete
+course tree including topic body HTML in a single call. When using `--course-id`, resolves
+courseGroup UUID → course UUID via `displayCourse` first. When using `--slug`, uses the two-call
+chain `courseGroups/slug/{slug}` → `displayCourse`. The output shows how many topics have body
+HTML — if that count is 0, the UUID may be wrong or content may not be published via the API.
 
-When using `--course-id`, the script first calls `courseGroups/{id}/displayCourse` to
-resolve the courseGroup UUID (from the admin URL) to the actual course UUID, then calls
-fullContent. If that resolution step returns nothing, the UUID is used directly.
-
-When using `--slug`, the same two-call chain runs: `courseGroups/slug/{slug}` →
-`courseGroups/{id}/displayCourse` → course UUID, then fullContent.
-
-The output shows how many topics have body HTML — e.g. `(42 topics have body HTML)`. If
-that count is 0, the UUID may be wrong or the course may not have text content published
-via the Incoming API.
+**Learning path fetching:** if a slug is given, first calls
+`GET /incoming/v2/content?types[]=learningPaths&query=slug:{slug}` to resolve the UUID, then
+calls `GET /incoming/v2/fullContent/learningPaths/{id}`. A UUID or a full `/learning-path/` URL
+can also be passed directly.
 
 ---
 
@@ -99,13 +108,13 @@ No external dependencies required for parsing.
 ## Step 5 — Report results
 
 Show the parser output summary:
-- Course title
-- Section / lesson / topic counts
+- Course title (or learning path name)
+- Section / lesson / topic counts (course) OR milestone / course counts (learning path)
 - Text-rich topic types found (TextPage, VideoPage, etc.)
 - Topics skipped (quiz, test, SCORM, etc.)
 - Output location (user-facing workspace path)
 
-### Output structure
+### Output structure — course
 
 ```
 <output_folder>/<course-slug>/
@@ -116,6 +125,17 @@ Show the parser output summary:
   <section-slug>/
     ...
 ```
+
+### Output structure — learning path
+
+```
+<output_folder>/<learning-path-slug>/
+  _index.md    ← milestones and course list with UUIDs
+```
+
+`_index.md` lists each milestone and its courses as a table. Each row shows the course title
+and its UUID. To extract the full content of any course in the path, run
+`/extract-TI-course` with `--course-id <uuid>` using the UUID from the table.
 
 Each lesson file contains:
 - YAML frontmatter (`course`, `section`, `lesson`)

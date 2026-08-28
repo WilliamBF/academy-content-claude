@@ -113,6 +113,26 @@ def _get_optional(base_url: str, api_key: str, path: str) -> dict | None:
     return None
 
 
+def list_content_first(base_url: str, api_key: str, types_param: str, query: str) -> dict | None:
+    """GET /incoming/v2/content?types[]={types_param}&query={query}; return first contentItem or None."""
+    resp = requests.get(
+        f"{base_url}/incoming/v2/content",
+        headers=_headers(api_key),
+        params={"types[]": types_param, "query": query},
+        timeout=30,
+    )
+    if resp.status_code != 200:
+        return None
+    items = resp.json().get("contentItems", [])
+    return items[0] if items else None
+
+
+# -- UUID detection ---------------------------------------------------------------
+
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I
+)
+
 # -- Course ID resolution -------------------------------------------------------
 
 def find_by_slug(base_url: str, api_key: str, slug: str):
@@ -168,6 +188,98 @@ def get_full_content(base_url: str, api_key: str, course_id: str) -> dict:
     """GET /incoming/v2/fullContent/courses/{id}."""
     print(f"Fetching GET /incoming/v2/fullContent/courses/{course_id}...")
     return _get(base_url, api_key, f"fullContent/courses/{course_id}")
+
+
+# -- Learning path helpers -------------------------------------------------------
+
+def find_learning_path_by_slug(base_url: str, api_key: str, slug: str):
+    """Resolve a learning path slug → (path_id, path_name) via /content list endpoint."""
+    print(f"Looking up learning path for slug '{slug}'...")
+    item = list_content_first(base_url, api_key, "learningPaths", f"slug:{slug}")
+    if not item or not item.get("id"):
+        print(f"[ERROR] No learning path found for slug '{slug}'.")
+        print("  Tip: use --learning-path <UUID> to pass the ID directly instead.")
+        sys.exit(1)
+    return item["id"], item.get("title") or item.get("name") or slug
+
+
+def get_full_learning_path_content(base_url: str, api_key: str, path_id: str) -> dict:
+    """GET /incoming/v2/fullContent/learningPaths/{id}."""
+    print(f"Fetching GET /incoming/v2/fullContent/learningPaths/{path_id}...")
+    return _get(base_url, api_key, f"fullContent/learningPaths/{path_id}")
+
+
+def parse_learning_path_flat(flat: dict) -> dict:
+    """Parse fullContent/learningPaths response (flat dot-notation or nested) into milestones list.
+
+    Handles both shapes:
+    - Nested: {"milestones": [{name, courses: [...]}, ...]}
+    - Flat:   {"milestone.0.name": "...", "milestone.0.milestoneCourses.0.id": "...", ...}
+    """
+    if isinstance(flat.get("milestones"), list):
+        return flat  # already nested
+
+    result = {k: v for k, v in flat.items() if "." not in k}
+    ms: dict = {}
+
+    for raw_key, value in flat.items():
+        parts = raw_key.split(".")
+        if parts[0] != "milestone" or len(parts) < 3:
+            continue
+        try:
+            i = int(parts[1])
+        except ValueError:
+            continue
+        ms.setdefault(i, {"courses": {}})
+        if len(parts) == 3:
+            ms[i][parts[2]] = value
+        elif len(parts) == 5 and parts[2] == "milestoneCourses":
+            try:
+                j = int(parts[3])
+            except ValueError:
+                continue
+            ms[i]["courses"].setdefault(j, {})
+            ms[i]["courses"][j][parts[4]] = value
+
+    milestones = []
+    for i in sorted(ms):
+        courses = [ms[i]["courses"][j] for j in sorted(ms[i].get("courses", {}))]
+        milestones.append({"name": ms[i].get("name", ""), "courses": courses})
+
+    result["milestones"] = milestones
+    return result
+
+
+def extract_learning_path(base_url: str, api_key: str, lp_input: str, lp_name: str = "") -> dict:
+    """Fetch and parse a learning path. lp_input may be a UUID, slug, or full URL."""
+    if _UUID_RE.match(lp_input):
+        path_id = lp_input
+        if not lp_name:
+            lp_name = path_id
+    else:
+        path_id, lp_name = find_learning_path_by_slug(base_url, api_key, lp_input)
+        print(f"Found: '{lp_name}' (UUID: {path_id})")
+
+    flat = get_full_learning_path_content(base_url, api_key, path_id)
+    lp = parse_learning_path_flat(flat)
+
+    if not lp_name or lp_name == path_id:
+        lp_name = lp.get("name") or lp.get("title") or path_id
+
+    n_milestones = len(lp.get("milestones", []))
+    n_courses = sum(len(m.get("courses", [])) for m in lp.get("milestones", []))
+    print(f"Extracted: {n_milestones} milestone(s), {n_courses} course(s)")
+
+    return {
+        "data": {
+            "LearningPath": {
+                "id": path_id,
+                "name": lp_name,
+                "shortDescription": lp.get("shortDescription", ""),
+                "milestones": lp.get("milestones", []),
+            }
+        }
+    }
 
 
 # -- Flat dot-notation parser ---------------------------------------------------
@@ -352,8 +464,8 @@ def extract_and_enrich(base_url, api_key, course_id, course_title, cg_id):
 def main():
     parser = argparse.ArgumentParser(
         description=(
-            "Extract a TI course via REST API.\n"
-            "Uses GET /incoming/v2/fullContent/courses/{id} -- includes topic body HTML.\n"
+            "Extract a TI course or learning path via REST API.\n"
+            "Uses GET /incoming/v2/fullContent/courses/{id} or fullContent/learningPaths/{id}.\n"
             "Bearer-token auth -- API key is never exposed in URLs."
         )
     )
@@ -369,6 +481,13 @@ def main():
             "(e.g. /admin/courseGroups/{UUID}/edit) -- the script resolves it automatically."
         )
     )
+    src.add_argument(
+        "--learning-path",
+        help=(
+            "Learning path slug, UUID, or full academy.celonis.com/learning-path/… URL. "
+            "Slug inputs are resolved to a UUID via the /content list endpoint."
+        )
+    )
     parser.add_argument("--output", required=True, help="Output path for raw JSON file")
     args = parser.parse_args()
 
@@ -376,18 +495,24 @@ def main():
     base_url = creds["base_url"].rstrip("/")
     api_key = creds["api_key"]
 
-    cg_id = ""
-    course_title = ""
-
-    if args.slug:
-        cg_id, course_title, course_id = find_by_slug(base_url, api_key, args.slug)
-        print(f"Found: '{course_title}' (course UUID: {course_id})")
+    if args.learning_path:
+        lp_input = args.learning_path.strip()
+        # Extract slug from a full URL containing /learning-path/
+        url_match = re.search(r"/learning-path/([^/?#]+)", lp_input)
+        if url_match:
+            lp_input = url_match.group(1)
+        result = extract_learning_path(base_url, api_key, lp_input)
     else:
-        cg_id, course_title, course_id = resolve_course_id(
-            base_url, api_key, args.course_id.strip()
-        )
-
-    result = extract_and_enrich(base_url, api_key, course_id, course_title, cg_id)
+        cg_id = ""
+        course_title = ""
+        if args.slug:
+            cg_id, course_title, course_id = find_by_slug(base_url, api_key, args.slug)
+            print(f"Found: '{course_title}' (course UUID: {course_id})")
+        else:
+            cg_id, course_title, course_id = resolve_course_id(
+                base_url, api_key, args.course_id.strip()
+            )
+        result = extract_and_enrich(base_url, api_key, course_id, course_title, cg_id)
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
