@@ -20,6 +20,7 @@ Output JSON is compatible with ti_extract_parse.py.
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 

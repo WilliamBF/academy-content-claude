@@ -125,19 +125,34 @@ def topic_content(t):
 
     # ------------------------------------------------------------------ text/body pages
 
-    if tn == "TextPage":
-        parts = [html_to_md(t.get("body", ""))]
+    if tn in ("TextPage", "NotebookPage"):
+        body = html_to_md(t.get("body", ""))
         m = _meta_line(t)
+        if body:
+            return "\n\n".join(p for p in [body, m] if p)
+        # body absent — collect every content-bearing field that is present
+        parts = []
+        if t.get("preTextBlock"):
+            parts.append(html_to_md(t["preTextBlock"]))
+        if t.get("description"):
+            parts.append(html_to_md(t["description"]))
+        for el in t.get("expandableLists", []):
+            items = "\n".join(
+                f"- **{i.get('title', '')}** -- {html_to_md(i.get('description', ''))}"
+                + (f" *Alt: {i['altText']}*" if i.get("altText") else "")
+                for i in el.get("expandableListItems", [])
+            )
+            parts.append(f"### {el.get('title', '')}\n{items}")
+        if t.get("postTextBlock"):
+            parts.append(html_to_md(t["postTextBlock"]))
+        for label, field in [("Start", "startMessage"), ("Pass", "passMessage"), ("Fail", "failMessage")]:
+            if t.get(field):
+                parts.append(f"**{label}:** {html_to_md(t[field])}")
         if m:
             parts.append(m)
-        return "\n\n".join(p for p in parts if p)
-
-    if tn == "NotebookPage":
-        parts = [html_to_md(t.get("body", ""))]
-        m = _meta_line(t)
-        if m:
-            parts.append(m)
-        return "\n\n".join(p for p in parts if p)
+        if parts:
+            return "\n\n".join(p for p in parts if p)
+        return f"*[{tn} -- no extractable text found]*"
 
     if tn == "ArticlePage":
         parts = []
