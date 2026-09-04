@@ -106,13 +106,11 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 | 7b | Set course metadata: description, tags, ribbon, duration, level, feature, role | `/update-TI-course-metadata` |
 
 > **Cowork note:** Steps 1–4e (content design, scripting, reviews) work fully in Cowork.
-> Steps 6–7 and `/update-plugin` run Python scripts and require **Claude Code desktop/CLI** (Windows/macOS).
+> Steps 6–7 run Python scripts and require **Claude Code desktop/CLI** (Windows/macOS).
 > The image upload within step 6 additionally requires Playwright, which is desktop-only.
 
 Steps 2a, 2b, and 3 can happen in any order. Steps 4 → 6 → 7 are sequential.
 Steps 3b and 4b–4e (reviews) are optional and can be run after any drafting step. Run `/review-course` for a full pass; run individual review skills for a single review type.
-
-**Plugin updates:** Run `/update-plugin` at any time to check GitHub for a newer version and install it automatically. Session start also checks silently if `PLUGIN_UPDATE_GITHUB_REPO` and `PLUGIN_UPDATE_GITHUB_TOKEN` are configured in `secrets.env`.
 
 **TI maintenance skills** (use after initial upload to inspect or fix a live course):
 
