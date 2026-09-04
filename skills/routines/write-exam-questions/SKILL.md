@@ -72,6 +72,12 @@ These rules exist because poorly written questions test reading comprehension or
 
 **No workarounds or limitations** — Don't test on software bugs, workarounds, or edge-case limitations. Test on intended functionality and best practices.
 
+**No geographic- or industry-specific jargon** — Avoid terms like "24/7" or "DSO" that assume regional or industry-specific familiarity. Keep language universally understandable.
+
+**No clues to the key** — No wording in the stem (scenario and/or question) should hint at which choice is correct. Also check across items: one item's scenario or question must not inadvertently give away the answer to another item in the same exam.
+
+**Precise qualification/quantification** — Never ask "What is the *best* way…?" Use a specific qualifier instead, e.g. "What is the most *time-efficient* way…?" or "Which is the most *cost-effective* way…?"
+
 ## Scenario Design
 
 **When to use a scenario:**
@@ -139,6 +145,10 @@ Before presenting a question, verify:
 - [ ] Correct answer is demonstrably correct from source material
 - [ ] Feedback for distractors is grounded in provided content
 - [ ] MRQ states exact number to select in capitals
+- [ ] No geographic- or industry-specific jargon
+- [ ] No wording gives clues to the key (within this item or across other items in the exam)
+- [ ] Qualifiers are specific (e.g., "most time-efficient"), never vague ("best")
+- [ ] Spell check run on the item and all distractors
 
 ## User Templates
 
