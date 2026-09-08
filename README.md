@@ -1,57 +1,58 @@
-# Content Creation Plugin (v1.2.0)
+# Content Creation Plugin (v2.27.0)
 
-Celonis Academy content creation toolkit for authoring, transforming, and publishing courses to the Thought Industries LMS.
-
-## Setup
-
-Run the appropriate setup script for your OS:
-
-- **Mac/Linux:** `bash setup-prefilled.sh`
-- **Windows:** `powershell -ExecutionPolicy Bypass -File setup-prefilled.ps1`
-
-The setup scripts:
-1. Install Python 3.12 (if missing)
-2. Install required Python libraries (requests, beautifulsoup4, python-dotenv, markdownify)
-3. Set persistent environment variables (`TI_BASE_URL`, `TI_API_KEY`, etc.)
-4. Write config files for both plugins
+A course-authoring toolkit for planning, drafting, reviewing, and publishing training content to an LMS via its REST API. Organized as **Actions** (single operations) and **Routines** (multi-step sequences).
 
 ## Credentials
 
-This plugin reads credentials from **environment variables** (set by the setup scripts):
+Scripts resolve credentials from a `secrets.env` file, checked in this order (first match wins):
+
+1. `secrets.env` in the current working directory
+2. `secrets.env` in a parent directory (walking up)
+3. `secrets.env` at the plugin install folder
+4. `~/.claude/secrets.env` (desktop only)
+5. Pre-existing environment variables (e.g. a Claude Code `settings.json` `env` block)
 
 | Variable | Purpose |
 |---|---|
-| `TI_BASE_URL` | TI instance URL |
+| `TI_BASE_URL` | LMS instance base URL |
 | `TI_API_KEY` | API bearer token |
-| `TI_LEARNER_EMAIL` | Learner account email |
+| `TI_LEARNER_EMAIL` | Learner account email (used for browser-based image uploads) |
 | `TI_LEARNER_PASSWORD` | Learner account password |
 | `TI_UPLOAD_URL` | Browser upload page URL |
-| `TI_ANALYTICS_DISABLED` | Set to `1` to disable TI analytics |
+
+See `requirements.txt` for Python dependencies (`requests`, `beautifulsoup4`, `markdownify`; `playwright` optional, for image upload).
 
 ## Skills
 
 ### Actions (single operations)
-- **new-course-project** — Scaffold a new course folder
-- **crawl-celonis-docs** — Crawl Celonis docs into .md reference files
+- **guide** — Workspace status check and routing to the right next skill
+- **create-course-project** — Scaffold a new course project folder structure
+- **fetch-celonis-docs** — Crawl a documentation site and save pages as source material
+- **extract-local-resources** — Extract content from local PPTX/PDF/DOCX files
+- **browse-TI-catalog** — List existing LMS courses with slugs and UUIDs
+- **get-TI-course-structure** — Fetch a course's section/lesson/topic tree with UUIDs
+- **evaluate-course-for-persona** — Evaluate a course against a target audience/persona
+- **evaluate-course-for-id** — Instructional design checklist review
+- **evaluate-course-for-sme** — Two-phase subject-matter-expert accuracy review
 
 ### Routines (multi-step sequences)
-- **course-to-html** — Google Doc → .md draft → TI-ready HTML
-- **lms-upload** — Upload HTML to TI LMS (iterative API pattern)
-- **lms-extract** — Pull existing course from TI into .md files
-- **academy-course-scripting** — Draft and refine course scripts
+- **design-course-content** — Plan and outline course content
+- **write-course-script** — Draft a publish-ready script with widget markup
+- **review-course-draft** — Human review pass on a Markdown draft via Google Docs
+- **review-course** — Orchestrate persona, ID, and SME reviews in one pass
+- **write-exam-questions** — Create and refine qualification exam questions
+- **convert-course-to-html** — Convert a script draft into publish-ready HTML, including image upload
+- **extract-TI-course** — Extract an existing course or learning path into structured Markdown
+- **upload-course-to-TI** — Create sections, lessons, and topics from a course payload
+- **update-TI-content** — Targeted update of a specific topic, lesson, or section
+- **update-TI-course-metadata** — Update catalog metadata (description, tags, ribbon, duration, level, etc.)
 
 ## Upload workflow
 
-1. Run `course-to-html` to generate HTML from Google Doc
-2. Run `image_uploader.py` to upload images to TI CDN
-3. Run `patch_cdn_urls.py` to replace `PENDING_CDN_UPLOAD` placeholders
-4. Run `lms-upload` to push content to TI (iterative: sections → lessons → topics)
-
-**Important:** Never run `lms-upload` while HTML still contains `PENDING_CDN_UPLOAD` placeholders.
-
-## Requirements
-
-See `requirements.txt` for Python dependencies. The setup scripts install these automatically.
+1. Run `design-course-content` → `write-course-script` to produce a script draft
+2. Run `convert-course-to-html` to generate HTML and upload images
+3. Run `upload-course-to-TI` to push content (sections → lessons → topics)
+4. Use `update-TI-content` / `update-TI-course-metadata` for targeted follow-up edits
 
 ## License
 
