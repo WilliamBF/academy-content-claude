@@ -72,62 +72,65 @@
 </div>
 
 <!--{carousel}-->
-<div class="carousel-snippet">
+<div class="snippet--carousel" role="region" tabindex="0" id="carousel-ctz6jifa5" aria-label="Image Carousel">
     <div class="carousel-container">
 
         <div class="carousel-image-area">
-
-            <div class="carousel-item active">
-                <div class="carousel-image-wrapper">
-                    <p><img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-1" style="cursor:zoom-in"></p>
-                </div>
+            
+            <div class="carousel-item active" role="tabpanel" aria-labelledby="tab-0" aria-hidden="false">
+                <h3>Title 1</h3>
+                <figure class="carousel-image-wrapper">
+                    <img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-1">
+                </figure>
                 <div class="carousel-text-wrapper">
                     <p>Description 1</p>
                 </div>
             </div>
-
-            <div class="carousel-item">
-                <div class="carousel-image-wrapper">
-                    <p><img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-2" style="cursor:zoom-in"></p>
-                </div>
+            
+            <div class="carousel-item" role="tabpanel" aria-labelledby="tab-1" aria-hidden="true">
+                <h3>Title 2</h3>
+                <figure class="carousel-image-wrapper">
+                    <img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="zcx3uphzj4wp">
+                </figure>
                 <div class="carousel-text-wrapper">
                     <p>Description 2</p>
                 </div>
             </div>
-
-            <div class="carousel-item">
-                <div class="carousel-image-wrapper">
-                    <p><img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-3" style="cursor:zoom-in"></p>
-                </div>
+            
+            <div class="carousel-item" role="tabpanel" aria-labelledby="tab-2" aria-hidden="true">
+                <h3>Title 3</h3>
+                <figure class="carousel-image-wrapper">
+                    <img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-3">
+            </figure>
                 <div class="carousel-text-wrapper">
                     <p>Description 3</p>
                 </div>
             </div>
-
-            <div class="carousel-item">
-                <div class="carousel-image-wrapper">
-                    <p><img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-4" style="cursor:zoom-in"></p>
-                </div>
+            
+            <div class="carousel-item" role="tabpanel" aria-labelledby="tab-3" aria-hidden="true">
+                <h3>Title 4</h3>
+                <figure class="carousel-image-wrapper">
+                    <img src="https://d3i9g4671ronu3.cloudfront.net/course-uploads/1cc62825-20df-4077-8216-a9df1132a5ad/wv9btyqqk4qi-imagehere.png" data-image="carousel-image-4">
+                </figure>
                 <div class="carousel-text-wrapper">
                     <p>Description 4</p>
                 </div>
             </div>
-
+        
         </div>
-
         <div class="carousel-controls">
 
-                <button class="carousel-button prev-button"><span class="material-symbols-outlined">keyboard_arrow_left</span>
-<p> Previous slide</p></button>
+                <button class="carousel-button prev-button" style="visibility:hidden" aria-label="Previous slide" aria-controls="carousel-ctz6jifa5">
+                  <span class="material-symbols-outlined">keyboard_arrow_left</span>
+                </button>
 
-            <div class="carousel-indicators">
-                <ul></ul>
-            </div>
-
-                <button class="carousel-button next-button"><p>Next slide </p><span class="material-symbols-outlined">keyboard_arrow_right</span></button>
+                <button class="carousel-button next-button" style="visibility:visible" aria-label="Next slide" aria-controls="carousel-ctz6jifa5">
+                  <span class="material-symbols-outlined">keyboard_arrow_right</span>
+                </button>
 
         </div>
 
+            <div class="carousel-indicators" role="tablist"></div>
     </div>
 </div>
 
