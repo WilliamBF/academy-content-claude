@@ -1,4 +1,3 @@
-
 /*{parent-zoomable grid}*/
 .parent {
 display: grid;
@@ -14,4 +13,55 @@ cursor: zoom-in;
 }
 .zoomable:hover{ 
 transform: scale(1.3);
+}
+
+
+/*{dividernumber}*/
+.divider-line {
+width: 100%; 
+height: 20px; 
+border-bottom: 1px solid #D9DFFF; 
+text-align: center;
+}
+.divider-number {
+width: 40px; 
+line-height: 40px; 
+border-radius: 50%; 
+text-align: center; 
+font-size: 20px; 
+margin: auto; 
+background-color: #0029ff; 
+color: #fff;
+}
+
+
+/*{bluelineseparator}*/
+.blue-line-separator {
+height:1px;
+background:#0029FF;
+margin:45px auto;
+width:75%;
+background-image: linear-gradient(90deg, #e5e9ff 0%, #0029FF 10%, #0029FF 90%, #e5e9ff 100%);
+}
+
+
+/*{infobox}*/
+.note-snippet{
+    display: block;
+    position: relative;
+    padding: 1.5rem 3rem 1.5rem 7rem;
+    border: 0.1rem solid #0029FF;
+    border-radius: 0.3rem;
+    z-index: 1;
+    background-color: #0029FF1A;
+    width: 75%;
+    margin:0 auto;
+}
+
+.note-snippet .icon-info{
+  color: #0029FF;
+  font-size: 3rem;
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
 }
