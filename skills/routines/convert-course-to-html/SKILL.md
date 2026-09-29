@@ -129,6 +129,7 @@ Instructional designers tag sections with `{snippetname}` on its own line. The t
 | `{numbered list}`, `{ordered list}` | `{formattedbullets}` |
 | `{big text}`, `{large text}`, `{display text}` | `{textXXL}` |
 | `{colored block}`, `{colored background}` | `{different-color}` |
+| `{internal}`, `{internal only}`, `{staff only}` | `{internalcontent}` |
 
 For anything not in this table, use context to make a judgment call. Never silently drop content.
 
@@ -163,6 +164,7 @@ For anything not in this table, use context to make a judgment call. Never silen
 | `{carousel}` | Image carousel with captions |
 | `{different-color}` | Coloured background text block |
 | `{textXXL}` | Oversized display text |
+| `{internalcontent}` | "FOR INTERNAL AUDIENCE ONLY" disclaimer banner |
 
 ---
 

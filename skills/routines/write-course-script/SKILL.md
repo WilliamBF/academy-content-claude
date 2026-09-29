@@ -63,7 +63,7 @@ the exact `{tag}` syntax that skill reads without any relabeling — tag correct
 lost or generalised down to "just a blue box" at conversion time.
 
 Categories, at a glance (see the cheat sheet for exact tag names, parameters, and multi-item syntax):
-- **Info & callout:** infobox (with/without title), different-color, page-transi, block-statement__quote
+- **Info & callout:** infobox (with/without title), different-color, page-transi, block-statement__quote, internalcontent
 - **Media:** videoembed, imagetextleft/right/center, textonimage, carousel
 - **Interactive:** Accordion, Tabs, onpagequiz, checkboxrounded, checkboxsquare
 - **Structure & layout:** sidetoside, externalsource, verticalstepper, processsnippet, dividernumber, bluelineseparator, quoteperson
