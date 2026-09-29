@@ -55,16 +55,37 @@ If objectives, structure, or audience are missing, ask before drafting.
 - Mirror tone from a reference script if provided, but follow the *target*
   document's own widget conventions.
 
-## Thought Industries (TI) widget vocabulary (write inline in the script)
-- Callout: [blue box start] ... [blue box end], usually opening with a bold label.
-- Tabs: [Tabs start], [Tab 1 - title]..., [Tab 1 - text]..., [Tabs end].
-- Accordions: [Accordions start], [Accordion 1 - title]..., [Accordion 1 - text]..., [Accordions end].
-- Code: [Code block start] ... [Code block end]; inline [inline code start]...[inline code end].
-- Visuals: [Image placeholder - <desc, alignment>]; Visual Placeholder: <title> + description; [Video placeholder - <desc>].
+## Snippet vocabulary (write inline in the script)
+
+Read `reference/snippet-cheat-sheet.md` (this plugin's root) before scripting a page with any widget
+beyond a plain paragraph. It's the full menu of ~27 snippets `convert-course-to-html` can produce, in
+the exact `{tag}` syntax that skill reads without any relabeling — tag correctly here and nothing is
+lost or generalised down to "just a blue box" at conversion time.
+
+Categories, at a glance (see the cheat sheet for exact tag names, parameters, and multi-item syntax):
+- **Info & callout:** infobox (with/without title), different-color, page-transi, block-statement__quote, internalcontent
+- **Media:** videoembed, imagetextleft/right/center, textonimage, carousel
+- **Interactive:** Accordion, Tabs, onpagequiz, checkboxrounded, checkboxsquare
+- **Structure & layout:** sidetoside, externalsource, verticalstepper, processsnippet, dividernumber, bluelineseparator, quoteperson
+- **Text & code:** textXXL, formattedbullets, codeblock, inlinecode
+
+Other markup:
+- Visuals without a snippet: [Image placeholder - <desc, alignment>]; Visual Placeholder: <title> + description; [Video placeholder - <desc>].
 - Sub-head inside a page: a bold line written as **H2 - <Title>**.
 - Author flags: [SME CHECK: ...] and [SME INPUT NEEDED: ...].
-Pick the widget that fits: Tabs for parallel options, Accordions for a
-scannable list, blue box for a key definition or tip.
+
+Pick the widget that fits, and don't default to the same 2-3 tags on every page:
+- Tabs for parallel options; Accordion for a scannable list; infobox for a key definition or tip.
+- sidetoside for a two-item comparison card; verticalstepper for a numbered walkthrough; processsnippet for a horizontal flow with arrows.
+- externalsource for a link-out card; quoteperson for a testimonial with a named person; block-statement__quote for an anonymous pull-quote.
+- checkboxrounded/checkboxsquare for a self-check the learner ticks off (not a graded quiz — that's onpagequiz or a QuizPage).
+- dividernumber/bluelineseparator to break up a long lesson visually; page-transi for a transition moment; different-color/textXXL sparingly, for genuine emphasis only.
+- imagetextleft/right/center or textonimage when an image needs to sit alongside or behind text, rather than a bare image placeholder.
+
+The older bracket markers ([blue box start]/[blue box end], [Tabs start]..., [Accordions start]...,
+[Code block start]...) still work — `convert-course-to-html` maps them to the same handful of snippets —
+but they only reach six of the ~27 available types. Prefer the `{tag}` form above so the full breadth
+stays available; fall back to brackets only when matching an existing document's established style.
 
 ## TI interactive page types (suggest placement during scripting)
 

@@ -28,6 +28,7 @@ Tags are stripped from the HTML output — they're for authoring only. Untagged 
 | `{different-color}` | Coloured background block for emphasis |
 | `{page-transi}` | Bold transition/highlight bar |
 | `{block-statement__quote}` | Large standalone quote or pull-out statement |
+| `{internalcontent}` | "FOR INTERNAL AUDIENCE ONLY" disclaimer banner — mark content not meant for learners |
 
 ### Media
 

@@ -53,6 +53,7 @@ This checklist is embedded here — do not load it from an external file at runt
 | 2.6 | Interactive elements (quizzes, polls, drag & drop, etc.) function correctly | Human check required |
 | 2.7 | Activities are meaningful and support learning objectives | Yes |
 | 2.8 | Feedback is provided for quiz answers (especially incorrect ones) | Yes |
+| 2.9 | A varied mix of snippet/widget types is used across the course, not the same 2-3 tags repeated on every page | Yes |
 
 ### 3. Grammar, Spelling & Clarity
 | # | Criterion | AI-checkable |
@@ -103,6 +104,21 @@ Work through each of the 25 criteria systematically. For each, assign one of thr
 **Criteria that always require human verification** (mark ⚠️ Human check regardless of content):
 - 2.6 Interactive elements function correctly
 - 1.2 Content accuracy (flag specific factual claims that could not be verified from the text alone)
+
+**How to check 2.9 (snippet variety):** Scan the whole document for snippet tags — both the `{tag}`
+form from `reference/snippet-cheat-sheet.md` and the older bracket markers ([blue box start], [Tabs
+start], [Accordion start], [Code block start]) that `convert-course-to-html` also accepts — and tally
+how many distinct snippet types appear versus the ~27 available in the cheat sheet. Rate:
+- **✅ Pass** — 4+ distinct types used, and no single type accounts for more than half of all tagged
+  sections.
+- **⚠️ Flag** — only 2-3 distinct types used, or one type dominates (>50% of tagged sections); name the
+  overused tag(s) and suggest specific alternatives from the cheat sheet that fit the content (e.g. a
+  repeated `{infobox}` used for a numbered process -> `{processsnippet}` or `{verticalstepper}`).
+- **❌ Fail** — only 0-1 snippet types used across a course long enough to warrant more (e.g. a full
+  Online Course relying solely on plain paragraphs or a single blue box, with no interactive or
+  structural snippets at all).
+Untagged prose-only sections are fine on their own — this criterion is about the tagged sections not
+converging on the same handful of tags, not about forcing a snippet onto every page.
 
 For spelling/grammar (3.1, 3.2): note any specific instances found, but caveat that Claude's spell-checking is not exhaustive — a human pass is still recommended for the final draft.
 
