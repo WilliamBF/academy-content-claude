@@ -26,6 +26,8 @@ The `.md` file is a pipeline artifact — it is never manually maintained. Alway
 
 Read `reference/html-snippet-blocks.html` (in this plugin's root directory) in full before generating any HTML. This is the authoritative source for all snippet structures.
 
+`reference/snippet-cheat-sheet.md` is the authoring-side counterpart — the tag names in Step 4's mapping tables below must stay in sync with it. If an author's `.md` draft uses a `{tag}` from the cheat sheet that isn't in this skill's tables, treat that as a bug to flag (both files should always list the same snippet set), not as an unrecognised tag.
+
 ---
 
 ## Step 2 — Detect the document style
