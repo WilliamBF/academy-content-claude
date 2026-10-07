@@ -214,15 +214,21 @@ def strip_time_indicators(payload: dict) -> dict:
     return payload
 
 
+_PENDING_RE = re.compile(r"PENDING_[A-Z_]*UPLOAD")
+
+
 def find_placeholders(payload: dict) -> list[str]:
-    """Return a list of warning strings for unresolved placeholders."""
+    """Return a list of warning strings for unresolved placeholders. Covers any
+    PENDING_*UPLOAD marker (e.g. PENDING_CDN_UPLOAD, PENDING_ATTACHMENT_UPLOAD,
+    PENDING_STORYLINE_UPLOAD from migrate-rise-export) plus WISTIA_MEDIA_ID_HERE,
+    not just the original CDN-image case."""
     warnings = []
     for sec in payload.get("sections", []):
         for les in sec.get("lessons", []):
             for top in les.get("topics", []):
                 body = top.get("body", "")
-                if "PENDING_CDN_UPLOAD" in body:
-                    warnings.append(f"  PENDING_CDN_UPLOAD found in topic '{top.get('title', '?')}'")
+                for marker in sorted(set(_PENDING_RE.findall(body))):
+                    warnings.append(f"  {marker} found in topic '{top.get('title', '?')}'")
                 if "WISTIA_MEDIA_ID_HERE" in body:
                     warnings.append(f"  WISTIA_MEDIA_ID_HERE found in topic '{top.get('title', '?')}'")
     return warnings

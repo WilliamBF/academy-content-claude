@@ -1,4 +1,4 @@
-# Content Creation Plugin (v2.28.0)
+# Content Creation Plugin (v2.30.0)
 
 A course-authoring toolkit for planning, drafting, reviewing, and publishing training content to an LMS via its REST API. Organized as **Actions** (single operations) and **Routines** (multi-step sequences).
 
@@ -34,6 +34,8 @@ See `requirements.txt` for Python dependencies (`requests`, `beautifulsoup4`, `m
 - **evaluate-course-for-persona** — Evaluate a course against a target audience/persona
 - **evaluate-course-for-id** — Instructional design checklist review
 - **evaluate-course-for-sme** — Two-phase subject-matter-expert accuracy review
+- **accessibility-check** — Audit a live course page by page against WCAG 2.2 AA and walk through fixes
+- **update-snippets** — Detect outdated/legacy snippet structures on a live course page and migrate them to current markup
 
 ### Routines (multi-step sequences)
 - **design-course-content** — Plan and outline course content
@@ -43,6 +45,7 @@ See `requirements.txt` for Python dependencies (`requests`, `beautifulsoup4`, `m
 - **write-exam-questions** — Create and refine qualification exam questions
 - **convert-course-to-html** — Convert a script draft into publish-ready HTML, including image upload
 - **extract-TI-course** — Extract an existing course or learning path into structured Markdown
+- **migrate-rise-export** — Migrate an Articulate Rise 360 zip export into a course, via the existing HTML-conversion and upload steps
 - **upload-course-to-TI** — Create sections, lessons, and topics from a course payload
 - **update-TI-content** — Targeted update of a specific topic, lesson, or section
 - **update-TI-course-metadata** — Update catalog metadata (description, tags, ribbon, duration, level, etc.)

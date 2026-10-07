@@ -96,7 +96,7 @@ python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_upl
   --check-pending
 ```
 
-This flag causes the uploader to exit with an error if `PENDING_CDN_UPLOAD` or `WISTIA_MEDIA_ID_HERE` are found in any topic body.
+This flag causes the uploader to exit with an error if any `PENDING_*UPLOAD` marker (e.g. `PENDING_CDN_UPLOAD`, or `PENDING_ATTACHMENT_UPLOAD`/`PENDING_STORYLINE_UPLOAD` from `migrate-rise-export`) or `WISTIA_MEDIA_ID_HERE` is found in any topic body.
 
 ---
 
@@ -363,5 +363,6 @@ Do NOT surface credentials or API keys in the output.
 | 403 Forbidden | Check `TI_API_KEY` is set and has full API rights |
 | Topics not appearing | Verify lesson IDs were fetched correctly in Phase 2 |
 | `PENDING_CDN_UPLOAD` in payload | Run image_uploader.py + patch_cdn_urls.py first |
+| `PENDING_ATTACHMENT_UPLOAD` / `PENDING_STORYLINE_UPLOAD` in payload (from `migrate-rise-export`) | No automated resolver yet — manually upload the asset to the CDN and patch the URL in by hand |
 | `WISTIA_MEDIA_ID_HERE` in payload | Replace with real Wistia media IDs before uploading |
 | Duplicate sections/lessons | Script handles duplicates by order of occurrence — verify payload structure |
