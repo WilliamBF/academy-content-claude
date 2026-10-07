@@ -6,3 +6,8 @@ markdownify>=0.11.0
 # Image uploader (Playwright, browser-based — install separately)
 # pip install playwright && playwright install chromium
 # playwright>=1.40.0
+
+# migrate-rise-export --format docx output (install separately if needed)
+# pip install python-docx Pillow
+# python-docx>=1.1.0
+# Pillow>=10.0.0
