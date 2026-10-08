@@ -20,7 +20,7 @@ Scripts resolve credentials from a `secrets.env` file, checked in this order (fi
 | `TI_LEARNER_PASSWORD` | Learner account password |
 | `TI_UPLOAD_URL` | Browser upload page URL |
 
-See `requirements.txt` for Python dependencies (`requests`, `beautifulsoup4`, `markdownify`; `playwright` optional, for image upload).
+See `requirements.txt` for Python dependencies (`requests`, `beautifulsoup4`, `markdownify`; `playwright` optional for image upload, `python-docx`/`Pillow` optional for `migrate-rise-export`'s `--format docx` output).
 
 ## Skills
 
@@ -36,11 +36,11 @@ See `requirements.txt` for Python dependencies (`requests`, `beautifulsoup4`, `m
 - **evaluate-course-for-sme** — Two-phase subject-matter-expert accuracy review
 - **accessibility-check** — Audit a live course page by page against WCAG 2.2 AA and walk through fixes
 - **update-snippets** — Detect outdated/legacy snippet structures on a live course page and migrate them to current markup
+- **review-course-draft** — Human review pass on a Markdown draft via Google Docs
 
 ### Routines (multi-step sequences)
 - **design-course-content** — Plan and outline course content
 - **write-course-script** — Draft a publish-ready script with widget markup
-- **review-course-draft** — Human review pass on a Markdown draft via Google Docs
 - **review-course** — Orchestrate persona, ID, and SME reviews in one pass
 - **write-exam-questions** — Create and refine qualification exam questions
 - **convert-course-to-html** — Convert a script draft into publish-ready HTML, including image upload
