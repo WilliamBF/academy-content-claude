@@ -3,7 +3,9 @@ requests>=2.31.0
 beautifulsoup4>=4.12.0
 markdownify>=0.11.0
 
-# Image uploader (Playwright, browser-based — install separately)
+# Image uploader fallback script (Playwright, browser-based — install separately).
+# Only needed if NOT using the preferred Playwright MCP path — see README.md
+# / reference/playwright-mcp-image-upload.md (Node.js only, no Python deps).
 # pip install playwright && playwright install chromium
 # playwright>=1.40.0
 
