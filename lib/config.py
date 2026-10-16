@@ -130,6 +130,9 @@ def resolve_credentials() -> dict:
     return {
         "base_url": base_url,
         "api_key": api_key,
+        # learner_email/learner_password: only required by image_uploader.py's
+        # Playwright-script fallback path. The preferred Playwright MCP image
+        # upload path uses a manual personal login instead — nothing stored.
         "learner_email": os.environ.get("TI_LEARNER_EMAIL", "").strip(),
         "learner_password": os.environ.get("TI_LEARNER_PASSWORD", "").strip(),
         "upload_url": os.environ.get("TI_UPLOAD_URL", "").strip(),

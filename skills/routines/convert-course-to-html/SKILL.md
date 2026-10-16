@@ -90,11 +90,22 @@ Also add the alt text as a comment so it can be filled in when the image is read
 If alt text or context suggests an animated GIF, flag it with a comment.
 
 ### Post-generation: image upload workflow
-After HTML generation, run these two co-located scripts in order:
+
+After HTML generation, images need to reach the TI CDN before `PENDING_CDN_UPLOAD` placeholders can be patched. There are two ways to do this — **check which is available before picking one**:
+
+**Path A — Playwright MCP (preferred).** Check whether Playwright MCP browser tools (`browser_navigate`, `browser_run_code_unsafe`, `browser_file_upload`, etc.) are present in the current toolset. If so, follow `reference/playwright-mcp-image-upload.md` in full. Summary: the user logs in manually with their own account (no stored credentials), Claude creates a new Text page in the dedicated upload course, batch-uploads images via `setInputFiles`, writes `cdn_map.json` incrementally, verifies every filename mapped, and saves the page.
+
+**Path B — Python script (fallback).** Use this only when Playwright MCP tools aren't available, or the user doesn't want to set up Node.js/`.mcp.json` right now. Requires `TI_LEARNER_EMAIL`/`TI_LEARNER_PASSWORD` set in `secrets.env` and a local Playwright install (`pip install playwright && playwright install chromium`):
 ```bash
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <images_folder> --output cdn_map.json
+```
+
+Either path produces the same `cdn_map.json` shape, so the patch step is identical either way:
+```bash
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <html_file> <cdn_map.json>
 ```
+
+> **Cowork users:** neither path works in Cowork. The script needs a local Playwright install; the MCP path needs a local session with Node.js and `.mcp.json` configured. Switch to Claude Code desktop/CLI for this step.
 
 ---
 

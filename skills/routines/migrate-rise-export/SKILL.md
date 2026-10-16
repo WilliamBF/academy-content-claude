@@ -10,7 +10,7 @@ Turn an Articulate Rise 360 zip export into a live Thought Industries course. Th
 **Co-located script:** `rise_extractor.py` (same folder as this SKILL.md) — parses the Rise zip directly (no round-trip through HTML), reusing the exact same block-dispatch logic for both output formats so nothing is lost between them.
 
 **Assumed sibling skills** (must exist alongside this one, i.e. this folder should sit at `skills/routines/migrate-rise-export/` next to `skills/routines/convert-course-to-html/` and `skills/routines/upload-course-to-TI/`):
-- `convert-course-to-html/image_uploader.py` + `patch_cdn_urls.py` — resolves the `PENDING_CDN_UPLOAD` placeholders this skill's output contains.
+- `convert-course-to-html`'s image upload step (Playwright MCP preferred, `image_uploader.py` fallback) + `patch_cdn_urls.py` — resolves the `PENDING_CDN_UPLOAD` placeholders this skill's output contains.
 - `upload-course-to-TI/ti_uploader.py` — pushes the resulting payload to TI. It already binds only to newly-created sections/lessons (never touches pre-existing content) while still correctly supporting MicroCourse shells, course creation, `--dry-run`, and `--check-pending` — don't reimplement any of this here.
 
 ---
@@ -41,15 +41,14 @@ If `--format docx` was requested instead, this step produces only `<workdir>/<Co
 
 ## Step 3 — Resolve images (reuse `convert-course-to-html`)
 
-The HTML/JSON from Step 2 contains `<img src="PENDING_CDN_UPLOAD" data-local="assets/<filename>" ...>` placeholders. Resolve them with the sibling skill's scripts, exactly as `upload-course-to-TI`'s own pre-flight checklist does:
+The HTML/JSON from Step 2 contains `<img src="PENDING_CDN_UPLOAD" data-local="assets/<filename>" ...>` placeholders. Resolve them against `<workdir>/assets` using the same image-upload step documented in `convert-course-to-html/SKILL.md` — Playwright MCP preferred (see `reference/playwright-mcp-image-upload.md`), `image_uploader.py` as the fallback. Either path produces `<workdir>/cdn_map.json`; then patch both outputs with it, exactly as `upload-course-to-TI`'s own pre-flight checklist does:
 
 ```bash
-python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/image_uploader.py" <workdir>/assets --output <workdir>/cdn_map.json
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <workdir>/<Course_Title>.html <workdir>/cdn_map.json
 python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/convert-course-to-html/patch_cdn_urls.py" <workdir>/<Course_Title>_payload.json <workdir>/cdn_map.json
 ```
 
-> **Cowork users:** `image_uploader.py` uses Playwright and cannot run in Cowork — switch to Claude Code desktop/CLI for this step.
+> **Cowork users:** neither image-upload path works in Cowork — the script needs a local Playwright install, the MCP path needs a local session with Node.js and `.mcp.json` configured. Switch to Claude Code desktop/CLI for this step.
 
 Only proceed once zero `PENDING_CDN_UPLOAD` strings remain in the payload JSON.
 
