@@ -55,6 +55,8 @@ This is different from the Mode A/B pattern used in `fetch-celonis-docs` (which 
 
 3. **Log in.** If not already signed in, this redirects to `academy-login.celonis.com`. The user signs in manually, with their own personal account, in the browser window. Never ask for or type a password in chat; never write one to `secrets.env`.
 
+   **Gotcha — learner vs. manager view:** the same account can have both a learner and a manager role, and after login the session may still be in learner mode from a previous state. If the page shows an info banner reading "You are currently a learner.", click the **Return to Management** button in it, then wait for the course manager page to load before continuing. Don't try to Add Page from the learner view — the manager controls aren't there.
+
    **Gotcha:** the redirect can land on an old, pre-existing page instead of a blank slate. Never type into whatever loads — always click **Add Page** → the **Text** page-type button to create a fresh page.
 
 4. **Title the page.** Fill the "Page Title" textbox with a clear, dated title (e.g. `Image Upload 2026-10-16`).
