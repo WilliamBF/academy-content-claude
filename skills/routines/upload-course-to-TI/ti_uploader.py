@@ -94,6 +94,17 @@ def _extract_course_id(raw: dict) -> str:
     return str(course_id)
 
 
+def manager_url(base_url: str, course_id: str, kind: str = "courseGroup") -> str:
+    """Backend manager link. Articles and videos use /article/, courses and microcourses /course/.
+    course_id must be the course ID, not the course group ID."""
+    segment = "article" if kind in ("article", "video") else "course"
+    return f"{base_url}/learn/manager/{segment}/{course_id}"
+
+
+def print_manager_link(base_url: str, course_id: str, kind: str = "courseGroup"):
+    print(f"\nManager link: {manager_url(base_url, course_id, kind)}")
+
+
 def create_course_shell(base_url: str, api_key: str, course_meta: dict) -> str:
     """Create a new course shell (metadata only) via POST /incoming/v2/content/course/create.
     Used for video kind courses and when uploading to an existing shell.
@@ -475,6 +486,8 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
     print(f"  TI_BASE_URL : {base_url}")
     print(f"  TI_API_KEY  : SET ({len(api_key)} chars)")
 
+    kind = course_meta.get("kind", "courseGroup")
+
     # Create course if no course_id was provided
     if not course_id:
         is_shell_only = course_meta.get("kind") in ("video", "article")
@@ -485,6 +498,7 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
             course_id = create_course_with_content(base_url, api_key, course_meta, payload)
             print(f"  Created course -- ID: {course_id}")
             print(f"\nUpload complete -- {n_topics} topic(s) created.")
+            print_manager_link(base_url, course_id, kind)
             print("\nNext step: run /update-TI-course-metadata to add tags and ribbon.")
             return
         else:
@@ -497,6 +511,7 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
         print(f"  Course ID: {course_id}")
         print("\nNo sections or lessons in payload -- skipping content upload phases.")
         print("Upload complete -- 0 topic(s) created.")
+        print_manager_link(base_url, course_id, kind)
         print("\nNext step: run /update-TI-course-metadata to add tags and ribbon.")
         return
 
@@ -513,6 +528,7 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
         created        = phase3_create_topics(base_url, api_key, payload, section_id_map, lesson_id_map)
 
     print(f"\nUpload complete -- {created} topic(s) created.")
+    print_manager_link(base_url, course_id, kind)
 
 
 def main():

@@ -167,6 +167,12 @@ Run `/get-TI-course-structure` or re-run `/extract-TI-course` on the same course
 the change is reflected. Alternatively, visit the course manager in Academy to check the
 updated page visually.
 
+When you know the course ID, always finish by sharing the backend manager link so the user can check the result directly:
+- Course or microcourse: `https://academy.celonis.com/learn/manager/course/<course_id>`
+- Article or video: `https://academy.celonis.com/learn/manager/article/<course_id>`
+
+Use the course ID, never the course group ID. If only a topic/lesson/section UUID is known, look up the course ID with `/get-TI-course-structure` rather than guessing.
+
 ---
 
 ## Notes

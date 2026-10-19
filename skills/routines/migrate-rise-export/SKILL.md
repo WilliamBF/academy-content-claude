@@ -74,7 +74,7 @@ python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_upl
 
 `--check-pending` aborts the push if any placeholder survived Step 3 — treat that as a sign Step 3 was skipped or failed, not something to override.
 
-Report the result (sections/lessons/topics created) and the course ID back to the user.
+Report the result (sections/lessons/topics created) and the course ID back to the user, together with the backend manager link that `ti_uploader.py` prints (`https://academy.celonis.com/learn/manager/course/<course_id>`, using the course ID, not the course group ID).
 
 ---
 
