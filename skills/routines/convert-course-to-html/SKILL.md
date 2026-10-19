@@ -93,7 +93,7 @@ If alt text or context suggests an animated GIF, flag it with a comment.
 
 After HTML generation, images need to reach the TI CDN before `PENDING_CDN_UPLOAD` placeholders can be patched. There are two ways to do this — **check which is available before picking one**:
 
-**Path A — Playwright MCP (preferred).** Check whether Playwright MCP browser tools (`browser_navigate`, `browser_run_code_unsafe`, `browser_file_upload`, etc.) are present in the current toolset. If so, follow `reference/playwright-mcp-image-upload.md` in full. Summary: the user logs in manually with their own account (no stored credentials), Claude creates a new Text page in the dedicated upload course, batch-uploads images via `setInputFiles`, writes `cdn_map.json` incrementally, verifies every filename mapped, and saves the page.
+**Path A — Playwright MCP (preferred).** Check whether Playwright MCP browser tools (`browser_navigate`, `browser_run_code_unsafe`, `browser_file_upload`, etc.) are present in the current toolset. If so, follow `reference/playwright-mcp-image-upload.md` in full. Summary: the user logs in manually with their own account (no stored credentials; if the "You are currently a learner." banner appears, click "Return to Management"), Claude creates a new Text page in the dedicated upload course, batch-uploads images via `setInputFiles`, writes `cdn_map.json` incrementally, verifies every filename mapped, and saves the page.
 
 **Path B — Python script (fallback).** Use this only when Playwright MCP tools aren't available, or the user doesn't want to set up Node.js/`.mcp.json` right now. Requires `TI_LEARNER_EMAIL`/`TI_LEARNER_PASSWORD` set in `secrets.env` and a local Playwright install (`pip install playwright && playwright install chromium`):
 ```bash
