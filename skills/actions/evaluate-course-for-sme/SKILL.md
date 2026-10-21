@@ -52,7 +52,7 @@ Do not proceed to load content until scope is confirmed.
 - **Uploaded/local file:** extract with `pandoc -t markdown` for `.docx`, or read directly.
 - **Existing live course:** use `extract-TI-course` by UUID/slug/URL.
 - **Reference resources:** load each resource specified by the user:
-  - Celonis docs: use `/fetch-celonis-docs` for the relevant section(s)
+  - Celonis docs: use `/fetch-celonis-docs` for the relevant section(s) (crawl a section, or search mode with `--topic` to pull every page on the course's subject)
   - Other courses: use `extract-TI-course`
   - Uploaded files: read directly
   - URLs: fetch via browser/web tool if available

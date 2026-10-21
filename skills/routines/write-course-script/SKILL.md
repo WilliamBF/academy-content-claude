@@ -25,7 +25,9 @@ If objectives, structure, or audience are missing, ask before drafting.
 ## Golden rules (non-negotiable)
 1. Never invent Celonis capabilities. If unsure whether a feature, tool name,
    scope, or behaviour is real, do not assert it. Mine the provided resources
-   first; if still unsure, write the line and add `[SME CHECK: ...]`.
+   first; if still unsure, offer the user a docs lookup (`/fetch-celonis-docs`,
+   search mode: one line, no fetching until they agree), and if they decline or
+   the docs don't settle it, write the line and add `[SME CHECK: ...]`.
 2. Flag, don't fabricate. For named customers or unverifiable claims, insert
    `[SME INPUT NEEDED: ...]` placeholders instead of writing specifics.
 3. Single hyphen only. Never use a double hyphen or em/en dashes. Use a spaced

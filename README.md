@@ -1,4 +1,4 @@
-# Content Creation Plugin (v2.31.2)
+# Content Creation Plugin (v2.32.0)
 
 A course-authoring toolkit for planning, drafting, reviewing, and publishing training content to an LMS via its REST API. Organized as **Actions** (single operations) and **Routines** (multi-step sequences).
 
@@ -35,7 +35,7 @@ A Python-script fallback (`image_uploader.py`) still exists for when the MCP isn
 ### Actions (single operations)
 - **guide** — Workspace status check and routing to the right next skill
 - **create-course-project** — Scaffold a new course project folder structure
-- **fetch-celonis-docs** — Crawl a documentation site and save pages as source material
+- **fetch-celonis-docs** — Crawl a docs section into source material, or search the Celonis docs for a question or topic and answer with sources cited
 - **extract-local-resources** — Extract content from local PPTX/PDF/DOCX files
 - **browse-TI-catalog** — List existing LMS courses with slugs and UUIDs
 - **get-TI-course-structure** — Fetch a course's section/lesson/topic tree with UUIDs
