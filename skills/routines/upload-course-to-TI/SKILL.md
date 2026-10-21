@@ -348,6 +348,10 @@ Show:
 - Number of sections, lessons, and topics created
 - Any warnings (missing IDs, duplicate titles, API errors)
 - Confirmation upload completed
+- **The backend manager link**, always, as the last thing shown. The script prints it as `Manager link: ...`; repeat it to the user as a clickable link. Format:
+  - Course or microcourse: `https://academy.celonis.com/learn/manager/course/<course_id>`
+  - Article or video: `https://academy.celonis.com/learn/manager/article/<course_id>`
+  - The ID is the **course ID**, never the course group ID (the script's "Course group ID" line is not the one to use). If the script's output lacks the link (e.g. an older run), build it from the course ID yourself using the formats above, with `TI_BASE_URL` as the host.
 
 Do NOT surface credentials or API keys in the output.
 
