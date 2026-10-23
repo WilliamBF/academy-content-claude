@@ -29,7 +29,7 @@ Run this review when a draft is substantively complete — after scripting but b
 
 ## The ID Review Checklist
 
-This checklist is embedded here — do not load it from an external file at runtime.
+This checklist is embedded here — do not load it from an external file at runtime. (The style and ID reference guides are a separate matter: Step 3 reads them as the standard for rating.)
 
 ### 1. Content Quality & Accuracy
 | # | Criterion | AI-checkable |
@@ -40,7 +40,10 @@ This checklist is embedded here — do not load it from an external file at runt
 | 1.4 | Examples used are relevant and illustrative | Yes |
 | 1.5 | No redundant or off-topic information included | Yes |
 | 1.6 | Learning progression is logical and well-structured | Yes |
-| 1.7 | Source references are cited appropriately (if applicable) | Yes |
+| 1.7 | Product claims, limits and "learn more" points link to documentation or carry a clear placeholder (`[LINK NEEDED]`, `[SME CHECK]`). **Fail** if a page makes product claims or gives numbers with no link and no flag. | Yes |
+| 1.8 | Concepts are introduced before learners are asked to use them (no question, reflect prompt or check relies on something not yet shown) | Yes |
+| 1.9 | Orientation content (scope, prerequisites, term map or hierarchy visual) appears near the objectives, not mid-course | Yes |
+| 1.10 | Guidance is concrete: no advice without the how, a link or an SME flag | Yes |
 
 ### 2. Engagement & Learner Experience
 | # | Criterion | AI-checkable |
@@ -53,7 +56,8 @@ This checklist is embedded here — do not load it from an external file at runt
 | 2.6 | Interactive elements (quizzes, polls, drag & drop, etc.) function correctly | Human check required |
 | 2.7 | Activities are meaningful and support learning objectives | Yes |
 | 2.8 | Feedback is provided for quiz answers (especially incorrect ones) | Yes |
-| 2.9 | A varied mix of snippet/widget types is used across the course, not the same 2-3 tags repeated on every page | Yes |
+| 2.9 | A varied mix of snippet/widget types is used across the course, not the same 2-3 tags repeated on every page. Also checked per page: no page with 2+ callout boxes, no two callouts in a row, no lesson where one type is more than 50% of tagged sections | Yes |
+| 2.10 | Risks and limits are framed as best practices with actions. No page is mostly limits, and there is at most one warning callout per page | Yes |
 
 ### 3. Grammar, Spelling & Clarity
 | # | Criterion | AI-checkable |
@@ -63,6 +67,7 @@ This checklist is embedded here — do not load it from an external file at runt
 | 3.3 | Sentence structure is clear and easy to read | Yes |
 | 3.4 | Acronyms are defined on first use | Yes |
 | 3.5 | Consistent terminology and phrasing throughout | Yes |
+| 3.6 | One external name per concept, consistent with the product and glossary. No internal-only names in learner-facing text | Yes |
 
 ### 4. Language Use
 | # | Criterion | AI-checkable |
@@ -72,6 +77,9 @@ This checklist is embedded here — do not load it from an external file at runt
 | 4.3 | Jargon and technical terms are explained or avoided unless necessary | Yes |
 | 4.4 | Inclusive and respectful language is used | Yes |
 | 4.5 | Passive voice is minimized; active voice preferred | Yes |
+| 4.6 | Titles are plain action or noun phrases (no "Name: Subtitle" pattern), are within the 50-character catalog limit (course title) and use Title Case per the style guide | Yes |
+| 4.7 | Learning objectives are understandable to a first-time learner (one line, one verb, outcome-based) | Yes |
+| 4.8 | Key analogies are written out in text, not carried only by an image | Yes |
 
 ---
 
@@ -95,7 +103,9 @@ Do not proceed to load content until scope is confirmed.
 
 ## Step 3 — Apply the checklist
 
-Work through each of the 25 criteria systematically. For each, assign one of three ratings:
+First read `reference/celonis_content_style_guide.md` (tone, naming conventions, titles, inclusion) and `reference/instructional_design_foundations.md` (this plugin's root). Use them as the standard when rating 3.5, 3.6 and 4.1-4.8. If the live Confluence pages may have changed, note that the local copy could be out of date.
+
+Work through each of the 34 criteria systematically. For each, assign one of three ratings:
 
 - **✅ Pass** — criterion is clearly met; brief note why.
 - **⚠️ Flag** — criterion is partially met, uncertain, or requires human verification; note what to check.
@@ -104,6 +114,8 @@ Work through each of the 25 criteria systematically. For each, assign one of thr
 **Criteria that always require human verification** (mark ⚠️ Human check regardless of content):
 - 2.6 Interactive elements function correctly
 - 1.2 Content accuracy (flag specific factual claims that could not be verified from the text alone)
+
+**Cold-reader criteria (1.8, 1.9, 4.7):** read page by page in order and record, for each page, only what a learner would know from earlier pages. Quote the page and the term or question that fails.
 
 **How to check 2.9 (snippet variety):** Scan the whole document for snippet tags — both the `{tag}`
 form from `reference/snippet-cheat-sheet.md` and the older bracket markers ([blue box start], [Tabs
@@ -119,6 +131,8 @@ how many distinct snippet types appear versus the ~27 available in the cheat she
   structural snippets at all).
 Untagged prose-only sections are fine on their own — this criterion is about the tagged sections not
 converging on the same handful of tags, not about forcing a snippet onto every page.
+
+**Per-page check for 2.9:** additionally flag any page with 2+ callout boxes (`{infobox}`, `{different-color}`, `{page-transi}`), any two callouts in a row, and any lesson where one type is more than 50% of tagged sections. For each, suggest a specific alternative from the cheat sheet (prose, a table, `{formattedbullets}`, `{sidetoside}` or `{Accordion}`). A per-page violation is at least ⚠️ Flag even if the course-level mix passes.
 
 For spelling/grammar (3.1, 3.2): note any specific instances found, but caveat that Claude's spell-checking is not exhaustive — a human pass is still recommended for the final draft.
 
@@ -162,6 +176,9 @@ Report structure:
 ## 4. Language Use
 ...
 
+## Sources to collect
+[Bulleted list of every missing link and unflagged claim (criteria 1.7 and 1.10), with page and quote, grouped so the LXD can request them from the SME in one go]
+
 ## Suggested next steps
 [Short paragraph: what to fix first, what needs human verification, whether the draft is ready to proceed]
 ```
@@ -171,6 +188,8 @@ Report structure:
 ## Step 5 — Hand off
 
 Present the At-a-glance summary table and the top 3 priority failures/flags in chat. Always say explicitly that this is a partial summary and the **full report with every criterion, quote, and suggestion is in the saved file** — give the file path.
+
+Also list all missing links and unflagged claims (1.7 and 1.10) in a short "Sources to collect" section so the LXD can gather them from the SME in one request.
 
 Do not edit the original script or live course. If the user asks to apply specific suggestions, treat that as an explicit follow-up action — confirm which items to apply first.
 
