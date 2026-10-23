@@ -55,7 +55,7 @@ Run each selected review skill in sequence, passing the already-loaded course co
 → Follow `/evaluate-course-for-persona` Steps 2–6 (skip Step 3 — content already loaded).
 
 **If ID review selected:**
-→ Follow `/evaluate-course-for-id` Steps 3–4 (skip Step 2 — content already loaded).
+→ Follow `/evaluate-course-for-id` Steps 3–4 (skip Step 2 — content already loaded). Step 3 begins by reading the style and ID reference guides; do not skip that.
 
 **If SME review selected:**
 → Follow `/evaluate-course-for-sme` Steps 2–4 (Phase 1 only; skip Step 2 content loading — already done).
@@ -79,7 +79,7 @@ After all selected reviews are complete, produce a one-page consolidated summary
 | Review type | Outcome | Report |
 |---|---|---|
 | Persona — <persona name> | <one-line verdict, e.g. "Good fit, 3 medium gaps"> | [link] |
-| ID checklist | <e.g. "22/25 pass, 3 flags, 0 failures"> | [link] |
+| ID checklist | <e.g. "31/34 pass, 3 flags, 0 failures"> | [link] |
 | SME pre-analysis | <e.g. "8 claims flagged: 2 high, 4 medium, 2 low"> | [link] |
 
 ## Top priorities across all reviews
@@ -107,4 +107,5 @@ Present the consolidated summary table in chat and give the user direct paths to
 
 - **Run reviews individually when:** you only need one type of review, or when the course source is already loaded in context from a prior skill (e.g. just after `/write-course-script`).
 - **Run this routine when:** you want a full QA pass before HTML conversion, or when multiple stakeholders need different review types addressed in one session.
+- **Before sharing a draft with colleagues:** run the ID review first. It catches missing links, stacked callouts and concepts used before they are introduced, which otherwise cost colleagues review rounds.
 - **Order of review types doesn't matter** for the reports themselves, but if the course needs significant content changes based on persona or ID review, it may make sense to fix those before running the SME review.

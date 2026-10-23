@@ -42,9 +42,6 @@ might have changed, re-fetch the live page instead of trusting this copy blindly
   draft initial slide content.
 - When referring to Celonis training in the plural, always say "training," never "trainings."
 - Be consistent with existing terminology and capitalization (see Naming Conventions below).
-- Capitalize headlines correctly: capitalize the first letter of the first word only (sentence
-  case), e.g. "Understanding the Process Explorer"  -  not "Understanding The Process Explorer" and
-  not all-lowercase.
 - Stick to the Celonis glossary (celonis.com/glossary) for terminology.
 - Read the script out loud before finalizing  -  check it flows and is easy to follow.
 
