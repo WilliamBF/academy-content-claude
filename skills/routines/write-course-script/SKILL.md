@@ -22,6 +22,13 @@ phase and ongoing refinement - not needs analysis or design-document creation.
   ground facts.
 If objectives, structure, or audience are missing, ask before drafting.
 
+## Read the style guide first
+Before drafting, read `reference/celonis_content_style_guide.md` (tone, scripting guidelines, naming
+conventions, inclusion). It is the authoritative source for voice and style. The digest under "Tone &
+writing style" below is a reminder, not a replacement. If this skill and the guide disagree on a
+voice or style point, the guide wins, except for the skill-only rules in this file (single hyphen,
+thought-bubble prompts, widget and callout rules, author flags).
+
 ## Terminology lock (before drafting)
 Build a short term list from the source material and ask the LXD to confirm it:
 - One external name per concept (the name learners see in the product or docs).
@@ -50,10 +57,19 @@ Use only the confirmed terms. If a concept has two names in the sources, ask whi
    a learner will want to follow up on without one of these.
 
 ## Tone & writing style
-- Professional yet conversational - like explaining a concept to a smart friend.
+- Engaging, informal and conversational - like explaining a concept to a smart friend.
 - Concise and fluff-free; apply the "Don't make me think" principle.
 - Embed short reflective questions (prefixed with a thought bubble) to pause the learner.
 - Lead with the point; vary sentence length; avoid over-formatting.
+
+Style digest (full rules in the style guide):
+- Active voice: "Celonis triggers it automatically", not "It is automatically triggered by Celonis."
+- Short sentences and no filler: "Next, open the View."
+- Mix "we" (walking through together) and "you" (learner actions).
+- Numbers as digits, except "one".
+- Video or voiceover scripts: even shorter sentences; spell out code and special characters; open
+  each video with a short recap and close with what comes next.
+- Read the script aloud before finalizing.
 
 ## Pedagogical best practices
 - Define before you use. Introduce foundational terms before building on them;
@@ -194,7 +210,7 @@ mismatches.
 6. Cold-reader pass. Read the draft page by page as a learner who has seen only the pages before.
    Fix: any term used before it is defined, any question asking for something not yet shown, any
    objective that is unclear, any claim with no link or flag, any page with stacked callouts, any
-   page that is mostly limits. Then run the verify step.
+   page that is mostly limits, any passive-voice or overlong sentence. Then run the verify step.
 7. Verify: structure intact, notes preserved, style consistent, no
    double-dashes, facts grounded, assumptions flagged.
 
