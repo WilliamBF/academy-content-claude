@@ -1,19 +1,29 @@
 ---
 name: "write-course-script"
-description: "Draft and refine a TI-ready course script with widget markup (blue boxes, tabs, accordions) from learning objectives, structure, and source material. Picks up after course design is complete."
+description: "Write, rewrite, or polish any learner-facing Celonis Academy text: course scripts, section, lesson and page copy, intros, summaries, recaps, learning objectives, video or voiceover scripts, and knowledge-check wording, with Thought Industries widget markup (infobox/blue boxes, tabs, accordions) where useful. Use whenever the request is to draft, write, script, rewrite, edit, tighten, or fill in the text of a course, section, lesson, or page, in a Word doc, Google Doc, Markdown file, or course placeholder. Applies the Celonis style guide, terminology lock, link-or-flag and author-flag rules. If objectives or structure are missing, it asks for them first."
 ---
 
 # Course Script Writer (Celonis Academy / Thought Industries)
 
 ## When to use
 Draft and iteratively refine the **script** of an online learning asset for
-Celonis Academy, once the upstream design is decided. Covers the Scripting
-phase and ongoing refinement - not needs analysis or design-document creation.
+Celonis Academy. Covers the Scripting phase and ongoing refinement - not needs analysis or
+design-document creation (that is `/design-course-content`).
+
+Use this skill any time the task is to produce or change the actual words a learner will read or
+hear, not only when widgets are requested. That includes:
+- drafting or rewriting a section, lesson or page, an intro, summary or recap;
+- writing learning objectives, video or voiceover narration, or the wording of a knowledge check;
+- tightening, simplifying or polishing existing course text, or filling in a course placeholder;
+- applying the style guide to a draft that is being written.
+
+If the objectives or structure are not decided yet, do not skip the skill: ask for them (see
+Inputs), or route the planning part to `/design-course-content` and come back.
 
 ## Inputs to expect (ask for any that are missing)
 - Learning objectives (ideally Bloom-style verbs).
-- Course structure / table of contents (chapters -> lessons -> pages; or pages
-  only for a microcourse).
+- Course structure / table of contents (sections -> lessons -> pages; or pages
+  only for a microcourse). In a course placeholder, always use section, not chapter.
 - Target audience and personas.
 - Asset type (see constraints below).
 - The working document: a Word (.docx) in a connected folder today; a Google
@@ -48,7 +58,7 @@ Use only the confirmed terms. If a concept has two names in the sources, ask whi
 3. Single hyphen only. Never use a double hyphen or em/en dashes. Use a spaced
    single hyphen ( - ).
 4. Preserve the given structure. Only add/refine script text under each page.
-   Do not rename or reorder chapters/lessons/pages unless explicitly asked.
+   Do not rename or reorder sections/lessons/pages unless explicitly asked.
 5. Version safety. Never overwrite an existing script file without a version
    suffix (e.g. _v2) or explicit confirmation to edit in place.
 6. Link or flag. Every product claim, threshold, or "learn more" point must have either a docs URL
@@ -66,7 +76,7 @@ Style digest (full rules in the style guide):
 - Active voice: "Celonis triggers it automatically", not "It is automatically triggered by Celonis."
 - Short sentences and no filler: "Next, open the View."
 - Mix "we" (walking through together) and "you" (learner actions).
-- Numbers: spell out zero to nine, numerals for 10 and above; numerals with units and symbols
+- Numbers: spell out zero to ten, numerals for 11 and above; numerals with units and symbols
   (5%, 4 p.m., 6 kg); never open a sentence with a numeral.
 - Video or voiceover scripts: even shorter sentences; spell out code and special characters; open
   each video with a short recap and close with what comes next.
@@ -79,7 +89,7 @@ Style digest (full rules in the style guide):
   yet been shown. Present the full set of options (with a visual where possible) before any
   reflect question or check that depends on them.
 - Orientation up front. Scope notes ("what this course does not cover"), prerequisites and the map
-  of key terms/hierarchy belong near the learning objectives in Chapter 1, not mid-course.
+  of key terms/hierarchy belong near the learning objectives in the first section, not mid-course.
 - Frame guidance positively. Write limits and risks as best practices ("Do X so that Y"), with
   concrete steps, owners or links. Use at most one callout for a warning per page. Do not
   sugarcoat real limitations; state them once, clearly, with the recommended action. If more than
@@ -104,7 +114,7 @@ Style digest (full rules in the style guide):
 ## Snippet vocabulary (write inline in the script)
 
 Read `reference/snippet-cheat-sheet.md` (this plugin's root) before scripting a page with any widget
-beyond a plain paragraph. It's the full menu of ~27 snippets `convert-course-to-html` can produce, in
+beyond a plain paragraph. It's the full menu of snippets `convert-course-to-html` can produce, in
 the exact `{tag}` syntax that skill reads without any relabeling — tag correctly here and nothing is
 lost or generalised down to "just a blue box" at conversion time.
 
@@ -134,10 +144,15 @@ Pick the widget that fits, and don't default to the same 2-3 tags on every page:
 - checkboxrounded/checkboxsquare for a self-check the learner ticks off (not a graded quiz — that's onpagequiz or a QuizPage).
 - dividernumber/bluelineseparator to break up a long lesson visually; page-transi for a transition moment; different-color/textXXL sparingly, for genuine emphasis only (and within the callout limits above).
 - imagetextleft/right/center or textonimage when an image needs to sit alongside or behind text, rather than a bare image placeholder.
+- videoembed when a Wistia video exists (needs the Wistia ID and title); use a [Video placeholder] only when it does not exist yet.
+- carousel for 3-6 related screens or examples; onpagequiz for a quick inline check (tag it here, or flag a full QuizPage).
+- formattedbullets for a short, styled numbered list; codeblock for multi-line code or queries; inlinecode for a field, function or value name inside a sentence.
+- internalcontent only for material that must not reach learners (author notes, SME-only detail); never in learner-facing text.
+- Before finishing a section, check you have not left a widget unused that would fit better than plain paragraphs, and that no single tag dominates (the ID review rates this under 2.9).
 
 The older bracket markers ([blue box start]/[blue box end], [Tabs start]..., [Accordions start]...,
 [Code block start]...) still work — `convert-course-to-html` maps them to the same handful of snippets —
-but they only reach six of the ~27 available types. Prefer the `{tag}` form above so the full breadth
+but they only reach six of the available types. Prefer the `{tag}` form above so the full breadth
 stays available; fall back to brackets only when matching an existing document's established style.
 
 ## TI interactive page types (suggest placement during scripting)
@@ -165,26 +180,32 @@ Do **not** insert the full markup unless asked. Mark it and let the author decid
   comprehension or engagement — not to pad a page count.
 
 ## Titles and learning objectives
-- Course and page titles: a short action phrase or plain noun phrase, in Title Case (capitalise
-  each word except prepositions, per the style guide). Avoid the "Fancy name: colon subtitle"
-  pattern. Keep the course title within the 50-character catalog limit and flag it as provisional
-  until the SME confirms.
-  Examples: "Choose Suitable Celonis Archetypes", "Leverage Archetypes for Solution Planning".
+- Titles: a short action phrase or plain noun phrase. Course titles use Title Case (capitalise
+  each word except prepositions, per the style guide). Section, lesson and page titles and in-page
+  subheads use sentence case (first word and proper nouns only). Avoid the "Fancy name: colon
+  subtitle" pattern. Keep the course title within the 50-character catalog limit and flag it as
+  provisional until the SME confirms.
+  Examples: course "Choose Suitable Celonis Archetypes"; page "Use archetypes for solution planning".
 - Learning objectives: one line each, one verb each, written as outcomes ("you'll be able to...").
   If an objective needs a second clause to be understood, split it or simplify it. Re-read each as
   a first-time learner: would they know what they will be able to do?
 
 ## Document structure conventions
-- Headings follow [Chapter] ..., [Lesson] ..., [Page] ...
+- Hierarchy labels: when working in a course placeholder (a Thought Industries course shell or a
+  document laid out to mirror one), use the TI hierarchy: [Section] ..., [Lesson] ..., [Page] ...
+  Never write "Chapter" there. In a document that has no placeholder and uses its own labels, follow
+  the labels it already uses ([Chapter] ..., [Lesson] ..., [Page] ...) per golden rule 4. If it is
+  unclear which applies, ask. Use the same word in titles, cross-references ("see Section 1") and
+  summaries.
 - Each page usually has a Content: note (design intent) and a Script section.
   Write the script under Script; if a page has none, add the heading.
 - When editing a .docx, match existing styling: body text in the document's
   normal style; real bulleted lists with bold lead-in words where appropriate.
 
 ## Asset types & constraints (Celonis Academy)
-- Online Course: >=2 chapters, >=2 lessons/chapter, >=2 pages/lesson; up to
+- Online Course: >=2 sections (chapters), >=2 lessons/section, >=2 pages/lesson; up to
   ~1.5 h; includes hands-on exercises.
-- Microcourse: pages only (no chapters/lessons); up to ~30 min; no hands-on.
+- Microcourse: pages only (no sections/lessons); up to ~30 min; no hands-on.
 - Standalone Video: 2-10 min microlearning nugget.
 - Live Webcast: quick, on-demand session for a rapid feature rollout.
 Sanity-check the requested structure against the declared asset type and flag

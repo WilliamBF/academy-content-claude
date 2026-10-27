@@ -1,11 +1,11 @@
 ---
 name: "evaluate-course-for-id"
-description: "Apply the Celonis Academy instructional design review checklist to a course script or live course — covering content quality & accuracy, engagement & learner experience, grammar/spelling/clarity, and language use. Produces a structured pass/flag/fail report with suggestions. Never edits the source directly. Trigger on requests like \"run an ID review on this script\", \"check this against the ID checklist\", \"review this draft for instructional design quality\"."
+description: "Apply the Celonis Academy instructional design review checklist to a course script or live course — covering content quality & accuracy, engagement & learner experience, grammar/spelling/clarity, and language use. Produces a structured pass/flag/fail report with suggestions, then offers to apply the fixes via apply-review-fixes. Never edits the source without the author's approval. Trigger on requests like \"run an ID review on this script\", \"check this against the ID checklist\", \"review this draft for instructional design quality\"."
 ---
 
 # Evaluate Course for ID
 
-Apply the Celonis Academy instructional design review checklist to a course script or live course, and produce a structured findings report. This skill only ever *suggests* changes — it never edits the source script or live course. All suggestions are reviewed by the Learning Experience Designer before anything is changed.
+Apply the Celonis Academy instructional design review checklist to a course script or live course, and produce a structured findings report. This skill only *suggests* changes in the report. It edits the source only after the Learning Experience Designer approves, and only through `/apply-review-fixes` (see Step 5).
 
 **What you can give this skill:** a course script as a Google Doc link, an uploaded/downloaded file (e.g. `.docx`), or an existing live Academy course (name, URL, or UUID/slug).
 
@@ -77,7 +77,7 @@ This checklist is embedded here — do not load it from an external file at runt
 | 4.3 | Jargon and technical terms are explained or avoided unless necessary | Yes |
 | 4.4 | Inclusive and respectful language is used | Yes |
 | 4.5 | Passive voice is minimized; active voice preferred | Yes |
-| 4.6 | Titles are plain action or noun phrases (no "Name: Subtitle" pattern), are within the 50-character catalog limit (course title) and use Title Case per the style guide | Yes |
+| 4.6 | Titles are plain action or noun phrases (no "Name: Subtitle" pattern), are within the 50-character catalog limit (course title) and follow the style guide's case rules (course titles in Title Case; section, lesson, page titles and subheads in sentence case) | Yes |
 | 4.7 | Learning objectives are understandable to a first-time learner (one line, one verb, outcome-based) | Yes |
 | 4.8 | Key analogies are written out in text, not carried only by an image | Yes |
 
@@ -120,7 +120,7 @@ Work through each of the 34 criteria systematically. For each, assign one of thr
 **How to check 2.9 (snippet variety):** Scan the whole document for snippet tags — both the `{tag}`
 form from `reference/snippet-cheat-sheet.md` and the older bracket markers ([blue box start], [Tabs
 start], [Accordion start], [Code block start]) that `convert-course-to-html` also accepts — and tally
-how many distinct snippet types appear versus the ~27 available in the cheat sheet. Rate:
+how many distinct snippet types appear versus the full set listed in the cheat sheet. Rate:
 - **✅ Pass** — 4+ distinct types used, and no single type accounts for more than half of all tagged
   sections.
 - **⚠️ Flag** — only 2-3 distinct types used, or one type dominates (>50% of tagged sections); name the
@@ -191,7 +191,9 @@ Present the At-a-glance summary table and the top 3 priority failures/flags in c
 
 Also list all missing links and unflagged claims (1.7 and 1.10) in a short "Sources to collect" section so the LXD can gather them from the SME in one request.
 
-Do not edit the original script or live course. If the user asks to apply specific suggestions, treat that as an explicit follow-up action — confirm which items to apply first.
+Then offer the fixes: count the findings that have a ready fix and ask, for example, "N findings have a ready fix (X safe and mechanical, Y need your judgment). Apply them now?" If the user says yes, follow `/apply-review-fixes` with this report and the source. It triages the findings, applies only what the user approves, and updates this report (Status per finding, re-rated criteria, new counts, Revision log).
+
+Do not edit the original script or live course before the user agrees. If the user says no, leave the report as the deliverable and mention they can run `/apply-review-fixes` on it later.
 
 ---
 

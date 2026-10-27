@@ -5,7 +5,7 @@ description: "Evaluate a Celonis Academy course script (Google Doc) or an existi
 
 # Evaluate Course for Persona
 
-Evaluates a Celonis Academy course (new script or existing live course) against one or more named personas, and produces a Markdown review report. This skill only ever *suggests* changes — it never edits the source script or the live course. All suggestions are reviewed and approved (or edited) by the Learning Experience Designer before anything is changed.
+Evaluates a Celonis Academy course (new script or existing live course) against one or more named personas, and produces a Markdown review report. This skill only *suggests* changes in the report. It edits the source only after the Learning Experience Designer approves, and only through `/apply-review-fixes` (see Step 7).
 
 **What you can give this skill:** a course script — as a Google Doc link, or an uploaded/downloaded doc file (e.g. `.docx`) — **or** a live Academy course, by just giving its URL (or slug/UUID if you have it). Either way, tell it which persona(s) to check it against.
 
@@ -128,7 +128,9 @@ Present the report to the user, but never treat the chat preview as the delivera
 - Every single time, say explicitly and unmissably that this is a partial summary and the full report — with every finding, quote, location, and suggestion — is in the saved file. Do not rely on a subtle link alone; state it in words, e.g. "This is a condensed preview — the saved report has the complete list of findings with quotes and locations." Put this sentence immediately before or after the link, not buried in a closing paragraph, since users have been observed to treat the chat preview as if it were the entire report and miss the link entirely.
 - Always give a direct link/path to the saved file so the user can open it in one click.
 
-Do not edit the original script or push any change to the live course. If the user asks to apply specific suggestions, treat that as a distinct, explicit follow-up action — confirm exactly which items to apply before touching the source.
+Then offer the fixes: count the Could Be Improved and Missing items that have a concrete suggested revision and ask, for example, "N findings have a ready fix. Apply them now?" If the user says yes, follow `/apply-review-fixes` with this report and the source. Persona suggestions are usually tone, depth or content changes, so expect most to be author-judgment items rather than a safe batch. Tagging notes are never auto-applied.
+
+Do not edit the original script or push any change to the live course before the user agrees. If the user says no, leave the report as the deliverable and mention they can run `/apply-review-fixes` on it later.
 
 ## Known limitations (be upfront about these)
 

@@ -93,9 +93,9 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 | 2a | Pull Celonis product docs as source material | `/fetch-celonis-docs` |
 | 2b | Extract content from local PPTX/PDF/DOCX files | `/extract-local-resources` |
 | 2c | Extract an existing TI course as reference | `/extract-TI-course` |
-| 3 | Plan, outline, and draft course content | `/design-course-content` |
+| 3 | Plan, outline, set objectives, and sketch course content; check a draft against the style guide | `/design-course-content` |
 | 3b | Send draft for review; collect and apply feedback | `/review-course-draft` |
-| 4 | Refine into a TI-ready script with widget markup | `/write-course-script` |
+| 4 | Write or rewrite the actual section, lesson and page text or voiceover script, with widget markup | `/write-course-script` |
 | 4b | Full review pass: persona fit, ID quality, SME accuracy | `/review-course` |
 | 4c | Persona fit review only | `/evaluate-course-for-persona` |
 | 4d | Instructional design checklist review only | `/evaluate-course-for-id` |
@@ -108,6 +108,11 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 > **Cowork note:** Steps 1–4e (content design, scripting, reviews) work fully in Cowork.
 > Steps 6–7 run Python scripts and require **Claude Code desktop/CLI** (Windows/macOS).
 > The image upload within step 6 additionally requires Playwright, which is desktop-only.
+
+**Routing rule for writing requests:** any request to draft, write, rewrite, polish or fill in course,
+section, lesson or page text goes to `/write-course-script`, even if no widgets are mentioned. Planning,
+outlining, objectives and style-check questions go to `/design-course-content`. When unsure, start with
+`/write-course-script` if text is being produced and `/design-course-content` if a structure is being decided.
 
 Steps 2a, 2b, and 3 can happen in any order. Steps 4 → 6 → 7 are sequential.
 Steps 3b and 4b–4e (reviews) are optional and can be run after any drafting step. Run `/review-course` for a full pass; run individual review skills for a single review type.

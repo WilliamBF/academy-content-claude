@@ -11,6 +11,7 @@ Runs one or more of the three course review types against the same course and pr
 - `/evaluate-course-for-persona` — persona fit (AI-driven, uses Drive persona files)
 - `/evaluate-course-for-id` — instructional design checklist (AI-assisted, 4-category QA)
 - `/evaluate-course-for-sme` — SME / technical accuracy (pre-analysis + human facilitation)
+- `/apply-review-fixes` — turns the findings into fixes and updates the reports (offered once at the end)
 
 You can also run any of those skills directly if you only need one type of review.
 
@@ -97,9 +98,20 @@ Save the consolidated summary to `reviews/<course-name>_review-summary_<YYYY-MM-
 
 ---
 
-## Step 5 — Hand off
+## Step 5 — Offer one combined fix pass
 
-Present the consolidated summary table in chat and give the user direct paths to all saved report files. If the SME review Phase 2 (doc prep and facilitation) was deferred, remind the user to run `/evaluate-course-for-sme` when ready to proceed.
+Present the consolidated summary table in chat and give the user direct paths to all saved report files. Then offer the fixes once, across all reviews: "N findings across the reviews have a ready fix (X safe and mechanical). Apply them now?"
+
+If the user says yes, follow `/apply-review-fixes` with the consolidated summary and the already-loaded source:
+- Findings that touch the same text are merged into one change. Apply in this order: SME corrections, then ID, then persona.
+- Do not run a separate fix pass per review.
+- After fixes, the individual reports and the consolidated summary are both updated (Status per finding, new counts, Revision log). Refresh the summary table and the top priorities so they reflect what is still open.
+
+If the SME review Phase 2 (doc prep and facilitation) was deferred, remind the user to run `/evaluate-course-for-sme` when ready to proceed. Accuracy items stay Open until the SME has answered.
+
+## Step 6 — Hand off
+
+Give the user direct paths to the saved reports, the updated summary, and the edited file or doc (if fixes were applied).
 
 ---
 
