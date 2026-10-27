@@ -26,7 +26,17 @@ might have changed, re-fetch the live page instead of trusting this copy blindly
   feature.
 - Within a chapter, open each video with a short recap of what came before, and close with a
   short note on what's coming next.
-- Write numbers as digits, except "one" (e.g. "3 key benefits", "There is one exception...").
+- Numbers:
+  - Spell out zero through nine ("three key benefits", "eight steps"). Use numerals for 10 and above
+    ("10 users", "42 fields", "115 records").
+  - Never start a sentence with a numeral. Spell it out ("Fifteen people attended") or rephrase
+    ("A total of 15 people attended").
+  - If numbers in one sentence refer to the same category and one is 10 or above, use numerals for
+    all of them ("They invited 4 adults and 12 children").
+  - Always use numerals with symbols and units, even below 10: percentages (5%), currency ($3, €7),
+    times and dates (4 p.m., June 8), technical units (6 kg, 2 miles).
+  - Always use numerals for ages of people, pets and objects ("a 5-year-old child", "3 months old").
+  - For large round numbers, combine numerals and words ("4 million", "9 billion").
 - Keep sentences short. ("Click the button. You'll see a popup." not "After clicking the button,
   a popup will appear which includes further options that you may choose from depending on your
   goals.")
