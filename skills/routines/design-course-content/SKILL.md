@@ -61,8 +61,8 @@ outdated or missing, re-fetch the live page rather than trusting the cached copy
    before writing any prose. If the request has no clear objective, ask or propose one.
 2. Sequence the content using the instructional design foundations (hook, chunk into steps,
    examples, recap, what's next).
-3. Write following the style guide: active voice, short sentences, digits for numbers,
-   Celonis naming conventions.
+3. Write following the style guide: active voice, short sentences, the number rules
+   (spell out zero to nine, numerals from 10), Celonis naming conventions.
 4. Apply the inclusion checklist to all examples, names, and characters as you go — not as a
    final pass.
 5. For voiceover content, follow the voiceover-specific rules: spell out special characters,

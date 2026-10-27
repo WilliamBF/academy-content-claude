@@ -66,7 +66,8 @@ Style digest (full rules in the style guide):
 - Active voice: "Celonis triggers it automatically", not "It is automatically triggered by Celonis."
 - Short sentences and no filler: "Next, open the View."
 - Mix "we" (walking through together) and "you" (learner actions).
-- Numbers as digits, except "one".
+- Numbers: spell out zero to nine, numerals for 10 and above; numerals with units and symbols
+  (5%, 4 p.m., 6 kg); never open a sentence with a numeral.
 - Video or voiceover scripts: even shorter sentences; spell out code and special characters; open
   each video with a short recap and close with what comes next.
 - Read the script aloud before finalizing.
