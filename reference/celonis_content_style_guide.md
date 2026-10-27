@@ -9,6 +9,36 @@ might have changed, re-fetch the live page instead of trusting this copy blindly
 - Scripting Tips: https://celonis.atlassian.net/wiki/spaces/CA/pages/70943893/Scripting+Tips
 - Different Perspectives in Our Training: https://celonis.atlassian.net/wiki/spaces/CA/pages/70942768/Different+Perspectives+in+Our+Training
 
+## Central voice and style
+
+The central "Celonis Style Guide and Tone of Voice" (FY27, Content Marketing) is the base for all
+Celonis writing. This file adds Academy-specific rules and lists where Academy differs. Where this
+file is silent, follow the central guide. Highlights to keep in mind while scripting:
+
+- Voice: optimistic but realistic, educated but not too jargony, elevated but still conversational
+  ("how would I say this to a close colleague?"), clear and concise but not reductive. For Academy,
+  aim for educational, clear and friendly.
+- Use contractions. Sentence fragments are fine in video scripts.
+- Use the Oxford comma in lists of three or more. Use American English.
+- Prefer plain verbs: "use" (not "leverage" or "utilize"), "people" (not "humans"), "transform" (not
+  "revolutionize"). Say "Celonis Platform" or "the Platform" once introduced.
+- Emphasis is bold only. No italics or underline for emphasis, and no ALL CAPS in body copy.
+- Bulleted lists are consistent: all full sentences (each ending in a period) or all fragments, with
+  parallel structure.
+- Keep paragraphs to 3-5 sentences. Link text is descriptive, never "click here" or "this report".
+- Do not capitalize: artificial intelligence, process mining, process intelligence (the category),
+  e-book. Write "generative AI" but "GenAI".
+- Use "they" or "their" for a single person, and gender-neutral role terms.
+
+Where Academy differs from the central guide:
+
+| Topic | Central guide | Academy |
+|---|---|---|
+| Course titles | Sentence case | Title Case (capitalize each word except prepositions). All other titles and headings stay sentence case. |
+| Dashes | Spaced em dash, used sparingly | Spaced single hyphen ( - ). Never em/en dashes or double hyphens. |
+| Jargon | Some jargon is fine, the audience knows it | Define terms a first-time learner might not know. |
+| Active voice | Avoid passive "when possible, easy, and makes sense" | Prefer active voice in scripts; fix passive sentences unless the actor is unknown or irrelevant. |
+
 ## Scripting guidelines
 
 - Write in an engaging, informal tone. ("Let's dive into how this works" not "This module will
@@ -27,13 +57,13 @@ might have changed, re-fetch the live page instead of trusting this copy blindly
 - Within a chapter, open each video with a short recap of what came before, and close with a
   short note on what's coming next.
 - Numbers:
-  - Spell out zero through nine ("three key benefits", "eight steps"). Use numerals for 10 and above
-    ("10 users", "42 fields", "115 records").
+  - Spell out zero through ten ("three key benefits", "ten steps"). Use numerals for 11 and above
+    ("11 users", "42 fields", "115 records").
   - Never start a sentence with a numeral. Spell it out ("Fifteen people attended") or rephrase
     ("A total of 15 people attended").
-  - If numbers in one sentence refer to the same category and one is 10 or above, use numerals for
+  - If numbers in one sentence refer to the same category and one is 11 or above, use numerals for
     all of them ("They invited 4 adults and 12 children").
-  - Always use numerals with symbols and units, even below 10: percentages (5%), currency ($3, €7),
+  - Always use numerals with symbols and units, even at ten or below: percentages (5%), currency ($3, €7),
     times and dates (4 p.m., June 8), technical units (6 kg, 2 miles).
   - Always use numerals for ages of people, pets and objects ("a 5-year-old child", "3 months old").
   - For large round numbers, combine numerals and words ("4 million", "9 billion").
@@ -68,10 +98,10 @@ Three review rounds (not all always needed):
 | Guideline | Don't | Do |
 |---|---|---|
 | Proper names (products, Touchpoints) are capitalized, both words if two-word. | academy, Insight explorer | Academy, Insight Explorer |
-| Titles: capitalize first letter of each word except prepositions. | More To Explore, Choose your role | More to Explore, Choose Your Role |
+| Course titles: capitalize first letter of each word except prepositions. All other titles and headings (section, lesson, page, in-page subheads): sentence case, first word and proper nouns only. After a colon, capitalize the first word only if a full sentence follows. | Course: Choose your role. Page: Choose Your Settings | Course: Choose Your Role. Page: Choose your settings |
 | Drop-down/description text: only first letter capitalized, except proper nouns. | View all the knowledge in the celonis confluence space | View all the knowledge in the Celonis Confluence space |
 | The Celonis logo is always lowercase "c"; the company name Celonis is capitalized. |  -  |  -  |
-| Acronyms: spell out in full on first mention, acronym in parentheses; acronym alone after that. Common non-Celonis acronyms (AI, SQL) can stay as acronyms. Menu labels: use the acronym with a tooltip for the full term. | Object-centric process mining | Object-Centric Process Mining (OCPM) |
+| Acronyms: spell out in full on first mention, acronym in parentheses; acronym alone after that. Common non-Celonis acronyms (AI, SQL) can stay as acronyms. Menu labels: use the acronym with a tooltip for the full term. | Object-centric process mining | Object-centric process mining (OCPM) |
 | Learner actions are written as: Log In / Sign Up, Log Out, Search (magnifying glass icon), Edit Profile, Admin & Settings. (Still fine as a noun, e.g. "the Login screen.") | Login, Logout, Search for content, Admin and settings | Log In, Log Out, Search (magnifying glass icon), Admin & Settings |
 | Never use "EMS" (any case)  -  always "Celonis" or "Celonis Platform." | ems, EMS | Celonis Platform |
 | Touchpoints (Academy, Trust Center, Marketplace, Support Center, etc.) are referred to as "Celonis + Touchpoint name" in web body text  -  except in menus/footers, or after the first mention in a paragraph, where "Celonis" is dropped. | Academy (in body text, first mention) | Celonis Academy |

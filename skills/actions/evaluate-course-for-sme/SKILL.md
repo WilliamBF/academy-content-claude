@@ -117,6 +117,8 @@ Pre-analysis structure:
 
 Tell the user: "Pre-analysis complete — N items flagged ([X] high, [Y] medium, [Z] low). Full pre-analysis saved to `reviews/<filename>`. Ready to prepare the SME review doc?"
 
+Pre-analysis items are questions for the SME, not fixes, so do not offer `/apply-review-fixes` at this point. Offer it after Step 7, once the SME's answers exist.
+
 Wait for confirmation before starting Phase 2.
 
 ---
@@ -182,7 +184,7 @@ For each piece of SME feedback:
 
 ### Step 8 — Apply approved corrections
 
-Edit the local draft file directly with approved corrections. Summarise what was changed vs. skipped. If further review cycles are needed, offer to repeat from Step 5.
+Apply the approved corrections using the same flow as `/apply-review-fixes` (Steps 3 to 5): ask where edits go (a Google Doc is edited directly; for a local file ask whether to write a new version or edit in place), apply the approved items, then update the pre-analysis report with a Status per flagged item (Fixed, Skipped, Open) and a Revision log. Summarise what was changed vs. skipped. If further review cycles are needed, offer to repeat from Step 5.
 
 ---
 
