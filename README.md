@@ -1,4 +1,4 @@
-# Content Creation Plugin (v2.35.1)
+# Content Creation Plugin (v2.35.3)
 
 A course-authoring toolkit for planning, drafting, reviewing, and publishing training content to an LMS via its REST API. Organized as **Actions** (single operations) and **Routines** (multi-step sequences).
 
