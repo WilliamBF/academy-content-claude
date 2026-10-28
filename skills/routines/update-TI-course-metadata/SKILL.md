@@ -75,7 +75,7 @@ Ask the LXD for **either** identifier - the script auto-resolves whichever is pr
 
 - **Course Group ID** (what the metadata endpoint actually needs), or
 - **Course UUID** (what `/upload-course-to-TI` and `/get-TI-course-structure` use — script
-  looks it up in the catalog and finds the parent Course Group ID via `displayCourseId`)
+  looks up the course title, searches course groups by title, and confirms the parent Course Group ID against each candidate's course list)
 
 If the LXD doesn't have either, run `/browse-TI-catalog --search "<partial title>"` first.
 
@@ -263,4 +263,4 @@ Any unknown key in the payload is passed through as-is (so you can add `title`, 
 | `HTTP 400: A processing error occurred` on `source` write | `source` is not writable via this endpoint. | Skip; set in UI. Consider TI feature request. |
 | `HTTP 400: Invalid ribbon slug 'X'. Available ribbons: ...` | Slug not in the school's ribbon list. | The error message helpfully lists valid slugs - script surfaces this and re-prompts. |
 | `HTTP 400: A processing error occurred` on other fields | Custom-field option not recognised, or invalid tag UUID. | Check the option against the taxonomy; check the tag UUID exists on `/incoming/v2/tags`. |
-| Course Group ID not resolved | Wrong Course UUID, or catalog listing didn't include the course (unpublished shells sometimes don't appear). | Ask LXD for the Course Group ID directly (visible in TI admin URL). |
+| Course Group ID not resolved | Wrong Course UUID, or no course group with a matching title contains that course. | Ask LXD for the Course Group ID directly (visible in TI admin URL). |
