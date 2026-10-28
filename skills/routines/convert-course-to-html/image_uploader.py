@@ -97,11 +97,43 @@ def create_text_page(page):
     log("Editor ready.")
 
 
+def close_upload_popup(page):
+    """Make sure the Redactor upload popup is closed so it can't block later clicks."""
+    box = page.locator("div.upload-redactor-box").first
+    for attempt in range(3):
+        try:
+            if not box.is_visible():
+                return
+        except Exception:
+            return
+        try:
+            if attempt == 0:
+                page.keyboard.press("Escape")
+            else:
+                close_btn = page.locator(
+                    ".redactor-modal-close, .re-modal-close, "
+                    ".redactor-modal [data-re-name='close'], .modal__close, "
+                    "button[aria-label='Close']"
+                ).first
+                if close_btn.is_visible():
+                    close_btn.click(timeout=2000)
+        except Exception:
+            pass
+        time.sleep(0.3)
+    # Last resort: force-hide popup and backdrop
+    page.evaluate(
+        "document.querySelectorAll("
+        "'div.upload-redactor-box, .redactor-modal, .redactor-modal-overlay, .re-modal-overlay'"
+        ").forEach(e => e.style.display = 'none')"
+    )
+
+
 def upload_image(page, image_path: Path) -> str | None:
     """
     Upload one image via the Redactor image toolbar button.
     Returns the CDN src URL of the uploaded image.
     """
+    close_upload_popup(page)  # clear any popup left over from a previous image
     existing_count = page.locator("figure.redactor-uploaded-figure img").count()
 
     # Click the image toolbar button
@@ -128,7 +160,8 @@ def upload_image(page, image_path: Path) -> str | None:
         f"document.querySelectorAll('figure.redactor-uploaded-figure img').length > {existing_count}",
         timeout=30000,
     )
-    time.sleep(1)
+    close_upload_popup(page)
+    time.sleep(0.5)
 
     # Extract CDN URL from the last uploaded figure
     last_img = page.locator("figure.redactor-uploaded-figure img").last
@@ -232,7 +265,12 @@ def main():
 
             for i, image_path in enumerate(images, 1):
                 log(f"[{i}/{len(images)}] {image_path.name}")
-                cdn_url = upload_image(page, image_path)
+                try:
+                    cdn_url = upload_image(page, image_path)
+                except Exception as e:
+                    log(f"  ERROR: upload failed -- {e}")
+                    cdn_url = None
+                    close_upload_popup(page)
                 cdn_map[image_path.name] = cdn_url
                 with open(output_path, "w") as f:
                     json.dump(cdn_map, f, indent=2)

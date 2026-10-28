@@ -59,35 +59,66 @@ This is different from the Mode A/B pattern used in `fetch-celonis-docs` (which 
 
    **Gotcha:** the redirect can land on an old, pre-existing page instead of a blank slate. Never type into whatever loads — always click **Add Page** → the **Text** page-type button to create a fresh page.
 
-4. **Title the page.** Fill the "Page Title" textbox with a clear, dated title (e.g. `Image Upload 2026-10-16`).
+4. **Title the page.** Only after the fresh page from Add Page → Text is open (never on an existing page that happens to be showing — a prior pilot typed a title into an old Text page by mistake; nothing saved, but re-do it via Add Page if it happens).
+   Fill the "Page Title" textbox with a clear, dated title (e.g. `Image Upload 2026-10-16`).
 
-5. **Batch-upload images.** Work in batches of about 10-15 images per `browser_run_code_unsafe` call. For each image in a batch:
+5. **Batch-upload images.** Work in batches of **about 10 images** per `browser_run_code_unsafe` call (larger batches hit the tool timeout, which resets the browser and loses every result from that call). For each image in a batch:
    - Click `a.re-button[data-re-name='image']`.
    - Wait for `div.upload-redactor-box` to appear.
    - Upload with `page.locator("input[type='file']").first().setInputFiles(path)` as the **primary** method — not a fallback. **Never** use the file-chooser-event pattern (`expect_file_chooser`) in a loop; it stalled and swallowed return values during the pilot.
-   - Wait for the new figure to appear, then move on.
+   - Wait for the new figure to appear.
+   - **Close the upload popup explicitly** (Escape, then its close button, then force-hide as a last resort) and wait for `div.upload-redactor-box` to be hidden. Redactor does not always close it after an upload; a lingering popup intercepts the next click and stalls the whole batch.
+   - Wrap each image in `try/catch` with short timeouts so one failure records `null` and the loop continues, and the call always returns results before the tool timeout.
 
    Example batch-upload pattern for one `browser_run_code_unsafe` call:
    ```javascript
+   async function closeUploadPopup(page) {
+     const box = page.locator("div.upload-redactor-box");
+     for (let attempt = 0; attempt < 3; attempt++) {
+       if (!(await box.first().isVisible().catch(() => false))) return;
+       if (attempt === 0) {
+         await page.keyboard.press("Escape");
+       } else {
+         const closeBtn = page.locator(
+           ".redactor-modal-close, .re-modal-close, .redactor-modal [data-re-name='close'], .modal__close, button[aria-label='Close']"
+         ).first();
+         if (await closeBtn.isVisible().catch(() => false)) await closeBtn.click({ timeout: 2000 }).catch(() => {});
+       }
+       await page.waitForTimeout(300);
+     }
+     // Last resort: force-hide the popup and its backdrop so it can't intercept clicks
+     await page.evaluate(() => {
+       document.querySelectorAll("div.upload-redactor-box, .redactor-modal, .redactor-modal-overlay, .re-modal-overlay")
+         .forEach((el) => { el.style.display = "none"; });
+     });
+   }
+
    async function uploadBatch(page, items) {
      // items: [{ path: "/abs/path/in/uploads/dir/img1.png", filename: "img1.png" }, ...]
+     // Keep to ~10 items per call.
      const results = {};
      for (const { path, filename } of items) {
-       const before = await page.locator("figure.redactor-uploaded-figure img").count();
-       await page.locator("a.re-button[data-re-name='image']").click();
-       await page.locator("div.upload-redactor-box").waitFor({ state: "visible", timeout: 5000 });
-       await page.locator("input[type='file']").first().setInputFiles(path);
-       await page.waitForFunction(
-         (n) => document.querySelectorAll("figure.redactor-uploaded-figure img").length > n,
-         before,
-         { timeout: 30000 }
-       );
-       const imgs = await page.locator("figure.redactor-uploaded-figure img").all();
-       const last = imgs[imgs.length - 1];
-       const src = await last.getAttribute("src");
-       results[filename] = src && src.endsWith("-" + filename) ? src : (src || null);
-       await page.locator("figure.redactor-uploaded-figure").last().click();
-       await page.keyboard.press("ArrowDown");
+       try {
+         await closeUploadPopup(page); // clear any popup left over from a previous image
+         const before = await page.locator("figure.redactor-uploaded-figure img").count();
+         await page.locator("a.re-button[data-re-name='image']").click({ timeout: 5000 });
+         await page.locator("div.upload-redactor-box").waitFor({ state: "visible", timeout: 5000 });
+         await page.locator("input[type='file']").first().setInputFiles(path);
+         await page.waitForFunction(
+           (n) => document.querySelectorAll("figure.redactor-uploaded-figure img").length > n,
+           before,
+           { timeout: 15000 }
+         );
+         await closeUploadPopup(page);
+         const imgs = await page.locator("figure.redactor-uploaded-figure img").all();
+         const src = await imgs[imgs.length - 1].getAttribute("src");
+         results[filename] = src && src.endsWith("-" + filename) ? src : (src || null);
+         await page.locator("figure.redactor-uploaded-figure").last().click({ timeout: 3000 });
+         await page.keyboard.press("ArrowDown");
+       } catch (e) {
+         results[filename] = null; // record the failure, keep going; retry nulls in a later call
+         await closeUploadPopup(page).catch(() => {});
+       }
      }
      return results;
    }
