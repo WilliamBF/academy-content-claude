@@ -44,6 +44,7 @@ Notes:
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -101,7 +102,8 @@ def resolve_group_id(base_url: str, api_key: str, given_id: str) -> str:
     Strategy:
       1. Try GET /incoming/v2/courseGroups/<given_id>. If HTTP 200 with a body that has 'id',
          it's already a Group ID.
-      2. Otherwise, paginate /incoming/v2/courseGroups looking for displayCourseId == given_id.
+      2. Otherwise treat it as a Course UUID: look up its title, search groups by title,
+         and confirm the match against each candidate group's /courses list.
     """
     r = requests.get(f"{base_url}/incoming/v2/courseGroups/{given_id}",
                      headers=api_headers(api_key), timeout=30)
@@ -111,35 +113,52 @@ def resolve_group_id(base_url: str, api_key: str, given_id: str) -> str:
         if isinstance(body, dict) and body.get("id") == given_id:
             return given_id
 
-    # Fall back: scan the catalog for a matching displayCourseId
-    print(f"[info] '{given_id}' is not a Course Group ID directly; scanning catalog for match...",
+    # Fall back: given_id is a Course UUID. The /courseGroups list route stops after 1,000
+    # rows and can't be filtered, so find the group via the course title instead:
+    # title -> candidate groups (content search) -> confirm via the group's /courses list.
+    print(f"[info] '{given_id}' is not a Course Group ID directly; resolving via course title...",
           file=sys.stderr)
-    cursor = None
-    for _ in range(200):  # safety bound on pagination
-        params = {"per_page": 50}
+    headers = api_headers(api_key)
+    fc = requests.get(f"{base_url}/incoming/v2/fullContent/courses/{given_id}",
+                      headers=headers, timeout=30)
+    title = fc.json().get("title") if fc.status_code == 200 else None
+    words = re.findall(r"[A-Za-z0-9]+", title or "")
+    if not words:
+        print(f"[ERROR] '{given_id}' is neither a Course Group ID nor a readable Course UUID "
+              f"(fullContent HTTP {fc.status_code}).", file=sys.stderr)
+        sys.exit(1)
+
+    query = "title.analyzed:(" + " AND ".join(f"{w.lower()}*" for w in words) + ")"
+    candidates, cursor = [], None
+    for _ in range(5):  # up to 500 candidates; a title match is normally 1-3
+        params = {"types[]": "courseGroups", "query": query}
         if cursor:
             params["cursor"] = cursor
-        r = requests.get(f"{base_url}/incoming/v2/courseGroups",
-                         headers=api_headers(api_key), params=params, timeout=30)
-        if r.status_code != 200:
-            print(f"[ERROR] Catalog listing failed: HTTP {r.status_code}: {r.text[:200]}",
+        r = requests.get(f"{base_url}/incoming/v2/content", headers=headers,
+                         params=params, timeout=30)
+        body = r.json() if r.status_code == 200 else {}
+        if "pageInfo" not in body:
+            print(f"[ERROR] Group search failed: HTTP {r.status_code}: {r.text[:200]}",
                   file=sys.stderr)
             sys.exit(1)
-        body = r.json()
-        for cg in body.get("courseGroups", []):
-            if cg.get("displayCourseId") == given_id:
-                gid = cg.get("id")
-                print(f"[info] Resolved Course UUID {given_id} -> Course Group ID {gid}",
-                      file=sys.stderr)
-                return gid
-        pi = body.get("pageInfo", {})
+        candidates += [c for c in body.get("contentItems", []) if isinstance(c, dict)]
+        pi = body["pageInfo"]
         if not pi.get("hasMore"):
             break
         cursor = pi.get("cursor")
+    candidates.sort(key=lambda c: c.get("title") != title)  # exact title matches first
 
-    print(f"[ERROR] Could not resolve '{given_id}' to a Course Group ID. If the course shell is "
-          f"unpublished it may not appear in the catalog listing - ask the LXD for the Course "
-          f"Group ID directly (visible in the TI admin URL).", file=sys.stderr)
+    for cg in candidates[:25]:
+        cr = requests.get(f"{base_url}/incoming/v2/courseGroups/{cg['id']}/courses",
+                          headers=headers, timeout=30)
+        if cr.status_code == 200 and any(c.get("id") == given_id for c in cr.json().get("courses", [])):
+            print(f"[info] Resolved Course UUID {given_id} -> Course Group ID {cg['id']}",
+                  file=sys.stderr)
+            return cg["id"]
+
+    print(f"[ERROR] Could not resolve '{given_id}' to a Course Group ID (searched groups titled "
+          f"'{title}'). Ask the LXD for the Course Group ID directly (visible in the TI admin URL).",
+          file=sys.stderr)
     sys.exit(1)
 
 
