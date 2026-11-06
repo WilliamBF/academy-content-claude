@@ -36,6 +36,8 @@ live course):
 | `customFields` | Design Settings > Custom Fields | Human-readable string values, not UUIDs. Keys: `duration`, `level`, `product` (UI label: "Feature"), `role`. Arrays for multi-select (`product`, `role`), strings for single-select (`duration`, `level`). |
 | `tagIds` | Design Settings > Tags | Array of tag UUIDs. Skill translates human names ("partner", "Owner Nicole Wendler") to UUIDs via `ti_taxonomy.json`. |
 | `ribbon` | Design Settings > Ribbon | Slug string, one of `new`, `updated`, `internal`. Skill accepts either display name ("New!") or slug. Pass `null` to clear. |
+| `tabs` | Detail Page Settings > Tabs | Free-text tabs only: `[{"label", "body"}]` (HTML body; never send `tabType`). **Replaces ALL existing free-text tabs**; other tab types (e.g. Syllabus) are kept. Verified 2026-11-05. |
+| `learningObjectives` | Detail Page Settings > Tabs | Shortcut: list of strings (or one HTML string) becomes a free-text tab labelled "Learning Objectives". Same replace behavior as `tabs`. |
 
 ## What this skill does NOT set (and why)
 
@@ -44,8 +46,8 @@ live course):
   occurred`. Suggests the field is read-only via this endpoint, or requires a different
   endpoint we haven't found. **Instruct the LXD to set this manually in the TI admin UI.**
   Recommend Nicole raise this as a feature request with TI.
-- **Learning Objectives tab** (Detail Page Settings > Tabs): no field for arbitrary
-  detail-page tabs in the metadata endpoint. Set manually in the TI admin UI.
+- **Non-free-text detail-page tabs** (e.g. Syllabus): not writable; they are left untouched.
+  Free-text tabs ARE writable - see `tabs` / `learningObjectives` above and Step 6b.
 - **`asset` / `detailAsset`** (catalog + detail images): out of scope for v1 - handled by the
   image workflow.
 - **`title` / `slug`**: presumed already correct on the shell. If they need to change, add them
@@ -171,6 +173,33 @@ The script accepts either the display name or the slug and translates.
 
 ---
 
+## Step 6b — Detail-page tabs (optional, destructive for free-text tabs)
+
+Skip unless the LXD wants a Learning Objectives tab or other free-text tabs.
+
+**Writing `tabs` replaces every existing free-text tab on the course.** Tabs of other types
+(e.g. Syllabus) are kept. No REST endpoint returns tabs (checked: courseGroups by-id / by-slug /
+displayCourse, content get-body, fullContent), so the script cannot detect what is already there.
+Do this instead:
+
+1. Ask the LXD to open **Detail Page Settings > Tabs** for the course and list the existing
+   free-text tabs (label + content), or confirm there are none.
+2. Ask whether to **keep** or **overwrite** them:
+   - **Keep:** include each existing free-text tab (label + HTML body, as the LXD supplies it)
+     in `tabs` alongside the new one(s).
+   - **Overwrite:** send only the new tab(s).
+3. Draft the new tab(s) from the course script (Learning Objectives: 3-6 measurable bullets
+   matching the script's objectives) and get explicit approval.
+4. Add `learningObjectives` and/or `tabs` to the payload. Only `label` and `body` are verified.
+
+The script refuses to write tabs unless `--confirm-replace-text-tabs` is passed. Only pass it
+after steps 1-3. Dry runs are not blocked.
+
+**Future:** once TI provides a REST read endpoint for tabs, replace step 1 with an automatic
+read and a keep/overwrite prompt.
+
+---
+
 ## Step 7 — Dry run
 
 Assemble the full payload and show the exact JSON that will be PUT. Do NOT include unchanged
@@ -203,6 +232,9 @@ python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/update-TI-course-metadata/
   --payload metadata_payload.json
 ```
 
+(Add `--confirm-replace-text-tabs` only if the payload contains `tabs` / `learningObjectives`
+and Step 6b was completed.)
+
 The script:
 1. Resolves credentials from `secrets.env` (never prints values).
 2. Sends `PUT /incoming/v2/content/course/update` with body
@@ -220,7 +252,8 @@ After a successful write, print a short checklist:
 
 - Verify tag application in the TI admin UI (GET does not return tagIds).
 - Set `source` (Advanced Settings > Source) manually — API can't write this yet.
-- Add the Learning Objectives detail-page tab manually if not already there.
+- If tabs were written: check Detail Page Settings > Tabs - new tabs present, no wanted
+  free-text tab lost (tabs cannot be read back via the API).
 - Double-check the ribbon appears as expected.
 
 ---
@@ -239,9 +272,13 @@ After a successful write, print a short checklist:
     "role": ["Data Analyst", "Champion"]
   },
   "tags": ["academy", "Owner Nicole Wendler"],
-  "ribbon": "new"
+  "ribbon": "new",
+  "learningObjectives": ["Explain how X works", "Build a Y"],
+  "tabs": [{"label": "Prerequisites", "body": "<p>Complete Z first.</p>"}]
 }
 ```
+
+(`learningObjectives` and `tabs` are optional; see Step 6b before using them.)
 
 The script:
 - Translates `tags` (human names) to `tagIds` (UUIDs) via `ti_taxonomy.json`.
@@ -263,4 +300,6 @@ Any unknown key in the payload is passed through as-is (so you can add `title`, 
 | `HTTP 400: A processing error occurred` on `source` write | `source` is not writable via this endpoint. | Skip; set in UI. Consider TI feature request. |
 | `HTTP 400: Invalid ribbon slug 'X'. Available ribbons: ...` | Slug not in the school's ribbon list. | The error message helpfully lists valid slugs - script surfaces this and re-prompts. |
 | `HTTP 400: A processing error occurred` on other fields | Custom-field option not recognised, or invalid tag UUID. | Check the option against the taxonomy; check the tag UUID exists on `/incoming/v2/tags`. |
+| `HTTP 400: Field "tabType" is not defined by type "FreeTextCourseTab"` | A tab was sent with `tabType`. | Send only `label` and `body` (script strips `tabType`). |
+| `[BLOCKED] Writing tabs replaces all existing free-text tabs` | `tabs` / `learningObjectives` in payload without the confirm flag. | Complete Step 6b, then add `--confirm-replace-text-tabs`. |
 | Course Group ID not resolved | Wrong Course UUID, or no course group with a matching title contains that course. | Ask LXD for the Course Group ID directly (visible in TI admin URL). |
