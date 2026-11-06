@@ -1,4 +1,4 @@
-# Content Creation Plugin (v2.35.3)
+# Content Creation Plugin (v2.36.0)
 
 A course-authoring toolkit for planning, drafting, reviewing, and publishing training content to an LMS via its REST API. Organized as **Actions** (single operations) and **Routines** (multi-step sequences).
 
@@ -44,6 +44,7 @@ A Python-script fallback (`image_uploader.py`) still exists for when the MCP isn
 - **evaluate-course-for-sme** — Two-phase subject-matter-expert accuracy review
 - **apply-review-fixes** — Turn review findings into approved fixes on the script and update the reports
 - **accessibility-check** — Audit a live course page by page against WCAG 2.2 AA and walk through fixes
+- **write-alt-text** — Write WCAG-compliant alt text by viewing each image and its surrounding text; runs automatically inside `convert-course-to-html`, `migrate-rise-export` and `accessibility-check`, asks only about uncertain images, and keeps an `alt-text-log.md` for Localization
 - **update-snippets** — Detect outdated/legacy snippet structures on a live course page and migrate them to current markup
 - **review-course-draft** — Human review pass on a Markdown draft via Google Docs
 
