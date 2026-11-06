@@ -64,30 +64,35 @@ URLs matching `d3i9g4671ronu3.cloudfront.net/course-uploads/...` — carry over 
 
 ### B. Hosted on Google Drive or other external URLs
 1. Download to `04_Assets/` via bash (`curl -L "URL" -o "04_Assets/filename.ext"`)
-2. **Generate alt text automatically**: use the Read tool to view the downloaded image file, then write a concise, descriptive alt text (1–2 sentences, describe what the image shows — not "image of..."). If the image is purely decorative, use `alt=""`.
-3. Insert placeholder with the generated alt text:
+2. Insert the placeholder (alt text is filled in by the alt text pass below):
    ```html
    <!-- IMAGE: 04_Assets/filename.ext — needs TI CDN upload before publishing -->
-   <p><img src="PENDING_CDN_UPLOAD" alt="<generated alt text>" data-local="04_Assets/filename.ext"></p>
+   <p><img src="PENDING_CDN_UPLOAD" alt="" data-local="04_Assets/filename.ext"></p>
    ```
+   If the script marks the image as a link, wrap it in `<a href="..." target="_blank" rel="noopener noreferrer">`.
 
 ### C. Local files already in `04_Assets/`
-If the source document references a local image file that already exists in `04_Assets/`:
-1. **Read the image** with the Read tool and generate alt text as in B above.
-2. Insert the same placeholder format.
+If the source document references a local image file that already exists in `04_Assets/`, insert the same placeholder format as in B.
 
 ### D. Screenshot/diagram placeholders (no image file exists yet)
-Derive the alt text from the surrounding script context (what the screenshot is meant to show):
 ```html
 <p><em>[Image placeholder: description]</em></p>
 ```
-Also add the alt text as a comment so it can be filled in when the image is ready:
+Keep the script's `purpose:` tag, if any, as a comment so the alt text pass can use it, and add a provisional alt comment so it can be revisited once the image exists:
 ```html
 <!-- ALT TEXT WHEN IMAGE IS ADDED: "what this screenshot shows" -->
 ```
 
 ### E. Animated GIF warning
-If alt text or context suggests an animated GIF, flag it with a comment.
+If the file or context suggests an animated GIF, flag it with a comment (the alt text pass will also queue it for a human check).
+
+### F. Alt text pass (automatic — do not wait to be asked)
+After all `<img>` tags are in place and before the image upload workflow below, run the `write-alt-text` skill's process (rules: `reference/alt-text-guidelines.md`) over **every** image in the converted pages, using what you already hold: the script text before/after each image, captions, `<a>` wrappers, and the image file itself (viewed with the Read tool; CDN images are downloaded first).
+
+- Confident cases are written straight into the HTML (`alt="..."` or `alt=""`), with no question to the designer.
+- Uncertain cases get a best-guess `alt` plus an `<!-- ALT CHECK -->` marker and are asked about together, in **one** batched question round at the end of the run, then the markers are removed.
+- `03_HTML/alt-text-log.md` is created or updated with every alt text (page, image, alt, decision) for the Localization team.
+- Mention the outcome in your end-of-run summary in one line (e.g. "Alt text: 14 handled automatically, 2 confirmed with you; log in `03_HTML/alt-text-log.md`; please review the wording").
 
 ### Post-generation: image upload workflow
 
@@ -184,7 +189,7 @@ For anything not in this table, use context to make a judgment call. Never silen
 Non-negotiable rules for every topic page:
 
 - **One `<h1>` per page**, must be first heading. Sequential heading levels. Max depth `<h3>`.
-- Every `<img>` has `alt`. Informational: concise description. Decorative: `alt=""`.
+- Every `<img>` has `alt`, resolved by the alt text pass (Step 3F) per `reference/alt-text-guidelines.md`: informative = at most two sentences, no "image of"; decorative or covered by adjacent text = `alt=""`; linked image = describes the destination. No `<!-- ALT CHECK -->` markers left, and `alt-text-log.md` written.
 - Link text must be descriptive. All links: `target="_blank" rel="noopener noreferrer"`.
 - No inline colour styles — use approved brand colours only if strictly necessary.
 - Accordion: `aria-expanded="false"`, `aria-controls` on triggers.

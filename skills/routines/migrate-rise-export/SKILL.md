@@ -41,6 +41,8 @@ If `--format docx` was requested instead, this step produces only `<workdir>/<Co
 
 ## Step 3 — Resolve images (reuse `convert-course-to-html`)
 
+**Alt text first.** Before the upload, run the `write-alt-text` process (rules in `reference/alt-text-guidelines.md`) over every image in the extracted HTML, using the Rise text around each image and the files in `<workdir>/assets`. Rise's own alt values are kept when they already meet the guidelines. Apply the results to both the HTML and the payload JSON, and write `alt-text-log.md` into `<workdir>`; only genuinely uncertain images are put to the owner, in one batched round.
+
 The HTML/JSON from Step 2 contains `<img src="PENDING_CDN_UPLOAD" data-local="assets/<filename>" ...>` placeholders. Resolve them against `<workdir>/assets` using the same image-upload step documented in `convert-course-to-html/SKILL.md` — Playwright MCP preferred (see `reference/playwright-mcp-image-upload.md`), `image_uploader.py` as the fallback. Either path produces `<workdir>/cdn_map.json`; then patch both outputs with it, exactly as `upload-course-to-TI`'s own pre-flight checklist does:
 
 ```bash

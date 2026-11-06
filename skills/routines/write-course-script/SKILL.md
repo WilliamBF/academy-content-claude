@@ -126,7 +126,7 @@ Categories, at a glance (see the cheat sheet for exact tag names, parameters, an
 - **Text & code:** textXXL, formattedbullets, codeblock, inlinecode
 
 Other markup:
-- Visuals without a snippet: [Image placeholder - <desc, alignment>]; Visual Placeholder: <title> + description; [Video placeholder - <desc>].
+- Visuals without a snippet: [Image placeholder - <desc, alignment>]; when you know the image's role, append `| purpose: decorative`, `| purpose: informative` or `| purpose: link:<destination>` so alt text can be written without questions later (rules: `reference/alt-text-guidelines.md`); Visual Placeholder: <title> + description; [Video placeholder - <desc>].
 - Sub-head inside a page: a bold line written as **H2 - <Title>**.
 - Author flags: [SME CHECK: ...], [SME INPUT NEEDED: ...] and [LINK NEEDED: ...].
 

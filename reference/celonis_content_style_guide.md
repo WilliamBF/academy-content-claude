@@ -126,7 +126,7 @@ examples, characters, and visuals, not just a final pass:
 
 **Visual representation**
 - Use imagery spanning a range of ages, ethnicities, genders, abilities, and body types.
-- Write alt text that reflects the same inclusiveness.
+- Write alt text that reflects the same inclusiveness (rules: `reference/alt-text-guidelines.md`).
 - Weave inclusion throughout the content, not as a one-off token example in a single section.
 
 The underlying goal: every learner should feel seen, valued, and respected by the content  -  this

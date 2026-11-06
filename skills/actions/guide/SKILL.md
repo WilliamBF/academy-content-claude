@@ -101,7 +101,7 @@ Use this when the user asks "what can I do?" or needs to jump to a specific step
 | 4d | Instructional design checklist review only | `/evaluate-course-for-id` |
 | 4e | SME / technical accuracy review only | `/evaluate-course-for-sme` |
 | 5 | Write qualification exam questions | `/write-exam-questions` |
-| 6 | Convert the script to TI-ready HTML | `/convert-course-to-html` |
+| 6 | Convert the script to TI-ready HTML (alt text is written automatically here) | `/convert-course-to-html` |
 | 7 | Upload the course to Thought Industries | `/upload-course-to-TI` |
 | 7b | Set course metadata: description, tags, ribbon, duration, level, feature, role | `/update-TI-course-metadata` |
 
@@ -125,6 +125,8 @@ Steps 3b and 4b–4e (reviews) are optional and can be run after any drafting st
 | `/get-TI-course-structure` | Fetch a course's section/lesson/topic tree with UUIDs |
 | `/update-TI-content` | Targeted update of a specific topic, lesson, or section by UUID |
 | `/update-TI-course-metadata` | Update catalog metadata: description, SEO, tags, ribbon, duration, level, feature, role |
+| `/accessibility-check` | Audit a live course against WCAG 2.2 AA, including missing or unsuitable alt text |
+| `/write-alt-text` | Alt text for specific images. Normally not needed: `convert-course-to-html`, `migrate-rise-export` and `accessibility-check` already run it |
 
 ---
 
