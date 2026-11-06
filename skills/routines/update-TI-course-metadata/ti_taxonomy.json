@@ -76,6 +76,11 @@
   "readonly_via_api": {
     "_note": "Fields that the metadata endpoint does not accept writes for. Instruct the LXD to set these in the TI admin UI.",
     "source": "Advanced Settings > Source (approximate duration). Every value tested returns HTTP 400 A processing error occurred, including strings other courses already have stored. Possible TI API bug or intentional read-only. Consider feature request.",
-    "learning_objectives_tab": "Detail Page Settings > Tabs > free-text tab called 'Learning Objectives'. No API field found."
+    "tabs_read": "Detail-page tabs cannot be READ via any REST endpoint (checked 2026-11-05: courseGroups by-id/by-slug/displayCourse, content get-body, fullContent). Existing free-text tabs must be checked in Detail Page Settings > Tabs."
+  },
+
+  "writable_tabs": {
+    "_note": "Verified 2026-11-05. PUT /incoming/v2/content/course/update with courseAttributes.courseGroups[].tabs = [{label, body}]. 'tabType' is rejected. A write REPLACES all existing free-text tabs; other tab types (e.g. Syllabus) are kept.",
+    "learning_objectives_label": "Learning Objectives"
   }
 }

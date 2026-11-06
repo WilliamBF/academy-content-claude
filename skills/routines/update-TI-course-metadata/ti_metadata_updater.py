@@ -27,8 +27,18 @@ Payload JSON format (human-name inputs):
         "role": ["Data Analyst"]      # multi-select
       },
       "tags": ["academy", "Owner Nicole Wendler"],  # human names; script -> UUIDs
-      "ribbon": "New!"                              # display or slug; script -> slug
+      "ribbon": "New!",                             # display or slug; script -> slug
+      "learningObjectives": ["Explain ...", "Build ..."],  # -> free-text tab "Learning Objectives"
+      "tabs": [{"label": "Prerequisites", "body": "<p>...</p>"}]  # free-text detail-page tabs
     }
+
+Detail-page tabs (verified 2026-11-05):
+- Written as courseGroups[].tabs = [{"label", "body"}]. Do NOT send "tabType" (rejected).
+- A tabs write REPLACES ALL existing free-text tabs on the course. Tabs of other types
+  (e.g. Syllabus) are kept. Send every free-text tab you want to end up with.
+- No REST endpoint returns tabs, so existing free-text tabs cannot be detected. The write is
+  blocked unless --confirm-replace-text-tabs is passed after the LXD has checked the course's
+  Detail Page Settings > Tabs in the TI admin UI and agreed to the replacement.
 
 The script wraps the final payload as:
     {"courseAttributes": {"courseGroups": [{"id": <groupId>, ...validated}]}}
@@ -70,8 +80,9 @@ TAXONOMY_PATH = HERE / "ti_taxonomy.json"
 KNOWN_TOP_LEVEL_FIELDS = {
     "id", "title", "slug", "description", "tagIds", "customFields",
     "asset", "assetAltText", "detailAsset", "detailAssetAltText",
-    "ribbon", "metaTitle", "metaDescription",
+    "ribbon", "metaTitle", "metaDescription", "tabs",
 }
+LEARNING_OBJECTIVES_TAB_LABEL = "Learning Objectives"
 VISIBILITY_TAGS = {"internal", "public", "customer", "partner", "academic"}
 SAFE_AUDIENCE_TAG = "academy"
 HOUSE_DESCRIPTION_MAX = 100
@@ -272,10 +283,59 @@ def validate_custom_fields(cf: dict, taxonomy: dict, warnings: list) -> dict:
     return out
 
 
+def build_tabs(tabs: list, learning_objectives, warnings: list) -> list:
+    """
+    Build the free-text tab list for courseGroups[].tabs.
+    Each tab is {"label", "body"}. 'tabType' is stripped (the API rejects it). A
+    'learningObjectives' list (strings or one HTML string) becomes a tab labelled
+    'Learning Objectives'. Adds a blocking 'TABS REPLACE' warning, because a tabs write
+    replaces ALL existing free-text tabs and they cannot be read back to check.
+    """
+    out = []
+    for i, t in enumerate(tabs or []):
+        if not isinstance(t, dict) or not str(t.get("label", "")).strip() \
+                or not str(t.get("body", "")).strip():
+            print(f"[ERROR] tabs[{i}] needs a non-empty 'label' and 'body' (HTML).", file=sys.stderr)
+            sys.exit(1)
+        if "tabType" in t:
+            warnings.append(f"tabs[{i}]: 'tabType' removed (API rejects it; the type is implied).")
+        extra = set(t) - {"label", "body", "tabType"}
+        if extra:
+            warnings.append(f"tabs[{i}]: unsupported keys {sorted(extra)} removed "
+                            f"(only label and body are verified).")
+        out.append({"label": t["label"].strip(), "body": t["body"]})
+
+    if learning_objectives:
+        if isinstance(learning_objectives, str):
+            body = learning_objectives
+        else:
+            body = "<ul>" + "".join(f"<li>{o}</li>" for o in learning_objectives) + "</ul>"
+        if any(t["label"] == LEARNING_OBJECTIVES_TAB_LABEL for t in out):
+            warnings.append("both 'tabs' and 'learningObjectives' define a "
+                            f"'{LEARNING_OBJECTIVES_TAB_LABEL}' tab; remove one.")
+        out.append({"label": LEARNING_OBJECTIVES_TAB_LABEL, "body": body})
+
+    if out:
+        warnings.append(
+            "TABS REPLACE: this write replaces ALL existing free-text tabs on the course "
+            "(tabs of other types, e.g. Syllabus, are kept). Existing tabs cannot be read via "
+            "the API. Check Detail Page Settings > Tabs in the TI admin UI, include any "
+            "free-text tab to keep in 'tabs', then re-run with --confirm-replace-text-tabs."
+        )
+    return out
+
+
 def build_payload(user_payload: dict, taxonomy: dict, force_visibility: bool) -> tuple:
     """Return (validated_fields_dict, warnings_list)."""
     warnings = []
     fields = {}
+
+    if "tabs" in user_payload or "learningObjectives" in user_payload:
+        user_payload = dict(user_payload)
+        tabs = build_tabs(user_payload.pop("tabs", []),
+                          user_payload.pop("learningObjectives", None), warnings)
+        if tabs:
+            fields["tabs"] = tabs
 
     for k, v in user_payload.items():
         if k == "description":
@@ -332,7 +392,8 @@ def cmd_show_current(base_url: str, api_key: str, group_id: str):
 
 
 def cmd_update(base_url: str, api_key: str, group_id: str,
-               user_payload: dict, dry_run: bool, force_visibility: bool):
+               user_payload: dict, dry_run: bool, force_visibility: bool,
+               confirm_replace_tabs: bool = False):
     taxonomy = load_taxonomy()
     fields, warnings = build_payload(user_payload, taxonomy, force_visibility)
 
@@ -358,6 +419,13 @@ def cmd_update(base_url: str, api_key: str, group_id: str,
     if blocking and not force_visibility:
         print("[BLOCKED] Audience tag write requires explicit --force-visibility-tags flag. "
               "Confirm with LXD before re-running.", file=sys.stderr)
+        sys.exit(2)
+
+    if any(w.startswith("TABS REPLACE") for w in warnings) and not confirm_replace_tabs \
+            and not dry_run:
+        print("[BLOCKED] Writing tabs replaces all existing free-text tabs. Confirm with the LXD "
+              "(after they check the admin UI), then re-run with --confirm-replace-text-tabs.",
+              file=sys.stderr)
         sys.exit(2)
 
     if dry_run:
@@ -389,10 +457,17 @@ def cmd_update(base_url: str, api_key: str, group_id: str,
     if "tagIds" in fields:
         print(f"[?] tagIds: {len(fields['tagIds'])} tag(s) sent; GET endpoint does not return "
               f"tagIds so please verify visually in TI admin UI.")
+    if "tabs" in fields:
+        labels = ", ".join(t["label"] for t in fields["tabs"])
+        print(f"[?] tabs: {len(fields['tabs'])} free-text tab(s) sent ({labels}); no API endpoint "
+              f"returns tabs so please verify in Detail Page Settings > Tabs.")
 
     print("\n=== Manual follow-ups ===")
     print("  - Set 'source' (Advanced Settings) manually in TI admin UI - API can't write it.")
-    print("  - Add 'Learning Objectives' detail-page tab manually if needed.")
+    if "tabs" in fields:
+        print("  - Check Detail Page Settings > Tabs: new tabs present, nothing unexpected lost.")
+    else:
+        print("  - Detail-page tabs were not touched. Pass 'learningObjectives' or 'tabs' to write them.")
     print("  - Verify tags applied visually in TI admin UI.")
 
 
@@ -410,6 +485,10 @@ def main():
     parser.add_argument("--force-visibility-tags", action="store_true",
                         help="Required to write any audience tag other than 'academy'. "
                              "Confirm with the LXD before using.")
+    parser.add_argument("--confirm-replace-text-tabs", action="store_true",
+                        help="Required to write 'tabs' / 'learningObjectives'. Replaces ALL "
+                             "existing free-text tabs. Use only after the LXD has checked the "
+                             "course's tabs in the TI admin UI.")
     args = parser.parse_args()
 
     creds = resolve_credentials()
@@ -433,7 +512,8 @@ def main():
 
     cmd_update(base_url, api_key, group_id, user_payload,
                dry_run=args.dry_run,
-               force_visibility=args.force_visibility_tags)
+               force_visibility=args.force_visibility_tags,
+               confirm_replace_tabs=args.confirm_replace_text_tabs)
 
 
 if __name__ == "__main__":
