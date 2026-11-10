@@ -31,6 +31,7 @@ Ask only for what the request does not already tell you:
    - Voiceover scripts need shorter sentences and spelled-out special characters
    - Exams have stricter format rules than regular quizzes
    - Course/module outlines need sequencing decisions a single page script doesn't
+   - Each asset type has its own structure and length limits: see `reference/asset-types.md`
 2. **Source material** — a Google Drive folder, local files, or other docs beyond the bundled
    references. Don't assume based on a past conversation — ask every time.
 
@@ -45,8 +46,10 @@ If they provide a Drive folder or local files, read them before drafting.
 
 ## Step 2 — Load the right reference material
 
-Four reference files are bundled with this plugin — read whichever apply to the task:
+Reference files are bundled with this plugin — read whichever apply to the task:
 
+- `$CONTENT_CREATION_PLUGIN_ROOT/reference/asset-types.md` — structure and length limits per
+  asset type. Read this when choosing or checking the content type.
 - `$CONTENT_CREATION_PLUGIN_ROOT/reference/instructional_design_foundations.md` — the theory:
   learning needs analysis, outcome-based objectives, content sequencing, Gagne's 9 events,
   the 8-step ID process, evaluation. Read this when planning structure or sequencing.

@@ -213,14 +213,9 @@ for recall (not new instruction), and suggest an interactive only where it impro
 - When editing a .docx, match existing styling: body text in the document's
   normal style; real bulleted lists with bold lead-in words where appropriate.
 
-## Asset types & constraints (Celonis Academy)
-- Online Course: >=2 sections (chapters), >=2 lessons/section, >=2 pages/lesson; up to
-  ~1.5 h; includes hands-on exercises.
-- Microcourse: pages only (no sections/lessons); up to ~30 min; no hands-on.
-- Standalone Video: 2-10 min microlearning nugget.
-- Live Webcast: quick, on-demand session for a rapid feature rollout.
-Sanity-check the requested structure against the declared asset type and flag
-mismatches.
+## Asset types & constraints
+Check the requested structure against the declared asset type (online course, microcourse,
+standalone video, live webcast) and flag mismatches. Constraints: `reference/asset-types.md`.
 
 ## Quiz authoring standard
 - Exactly 3 options per question, with plausible distractors, similar in length.
