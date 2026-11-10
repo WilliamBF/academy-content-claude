@@ -36,6 +36,7 @@ import os
 import re
 import sys
 import time
+from html.parser import HTMLParser
 from pathlib import Path
 
 try:
@@ -246,6 +247,103 @@ def find_placeholders(payload: dict) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Nesting check (advisory; rules in reference/snippet-nesting.md)
+# ---------------------------------------------------------------------------
+
+_VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+# class on a container's content slot -> slot kind
+_SLOT_CLASSES = {
+    "snippet--tabs-content": "tabs",
+    "accordion-content": "accordion",
+    "different-color": "different-color",
+    "infobox-text": "infobox",
+    "snippet--internal-content": "internalcontent",
+}
+# class that marks the root element of a snippet (leaf or container)
+_SNIPPET_ROOTS = {
+    "infobox-container", "inttSnippet", "textonimage", "extSource", "code-block", "list-circles",
+    "onpagequizz", "accordion-wrapper2", "snippet--tabs-wrapper", "different-color",
+    "snippet--internal-content", "snippet--carousel", "tdContainer", "processSnippet",
+    "vertical-stepper-wrapper", "radio-checkbox", "checkbox", "quote-cont", "divider-wrapper",
+}
+# ids that the reference snippets repeat by design
+_ALLOWED_DUP_IDS = {"result"}
+
+
+class _NestingScanner(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.stack = []          # [(tag, set(classes), slot_kind or None)]
+        self.warnings = set()
+        self.ids = {}
+
+    def _slots(self):
+        return [s[2] for s in self.stack if s[2]]
+
+    def _in_class(self, cls):
+        return any(cls in s[1] for s in self.stack)
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        classes = set((a.get("class") or "").split())
+        if a.get("id"):
+            self.ids[a["id"]] = self.ids.get(a["id"], 0) + 1
+        slots = self._slots()
+
+        if classes & _SNIPPET_ROOTS and len(slots) >= 2:
+            self.warnings.add("snippet nested deeper than two levels")
+        if "accordion-wrapper2" in classes and "accordion" in slots:
+            self.warnings.add("Accordion inside Accordion")
+        if "snippet--tabs-wrapper" in classes and "tabs" in slots:
+            self.warnings.add("Tabs inside Tabs")
+        if "accordion-wrapper2" in classes and self._in_class("onpagequizz"):
+            self.warnings.add("Accordion inside onpagequiz (labels turn white after click; place the Accordion after the quiz)")
+        if "list-circles" in classes and "infobox" in slots:
+            self.warnings.add("formattedbullets inside infobox (renders badly; use different-color)")
+        if re.fullmatch(r"h[1-6]", tag) and slots:
+            self.warnings.add("heading inside a container slot (use a bold line)")
+
+        if tag in _VOID_TAGS:
+            return
+        slot_kind = next((_SLOT_CLASSES[c] for c in classes if c in _SLOT_CLASSES), None)
+        self.stack.append((tag, classes, slot_kind))
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stack) - 1, -1, -1):
+            if self.stack[i][0] == tag:
+                del self.stack[i:]
+                return
+
+    def finish(self):
+        for i, n in self.ids.items():
+            if n > 1 and i not in _ALLOWED_DUP_IDS:
+                self.warnings.add(f"duplicate id '{i}' ({n}x)")
+        return sorted(self.warnings)
+
+
+def find_nesting_warnings(payload: dict) -> list[str]:
+    """Advisory warnings for snippet nesting that is known to break or is untested
+    (see reference/snippet-nesting.md). Never blocks an upload."""
+    out = []
+    for sec in payload.get("sections", []):
+        for les in sec.get("lessons", []):
+            for top in les.get("topics", []):
+                body = top.get("body", "")
+                if not body:
+                    continue
+                scanner = _NestingScanner()
+                try:
+                    scanner.feed(body)
+                    scanner.close()
+                except Exception:
+                    continue
+                for w in scanner.finish():
+                    out.append(f"  {w} in topic '{top.get('title', '?')}'")
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Upload phases
 # ---------------------------------------------------------------------------
 
@@ -447,6 +545,13 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
     )
 
     placeholders = find_placeholders(payload)
+    nesting_warnings = find_nesting_warnings(payload)
+
+    def _print_nesting():
+        if nesting_warnings:
+            print("\nNesting warnings (advisory, upload not blocked; see reference/snippet-nesting.md):")
+            for w in nesting_warnings:
+                print(w)
 
     if dry_run:
         if course_meta and not course_id:
@@ -466,6 +571,7 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
                 print(w)
         else:
             print("No unresolved placeholders found")
+        _print_nesting()
         return
 
     if check_pending and placeholders:
@@ -480,13 +586,15 @@ def run_upload(payload_path: str, course_id: str = None, dry_run: bool = False, 
             print(w)
         print("Proceeding anyway -- use --check-pending to abort on warnings.")
 
+    _print_nesting()
+
     creds = resolve_credentials()
     base_url = creds["base_url"]
     api_key  = creds["api_key"]
     print(f"  TI_BASE_URL : {base_url}")
     print(f"  TI_API_KEY  : SET ({len(api_key)} chars)")
 
-    kind = course_meta.get("kind", "courseGroup")
+    kind = (course_meta or {}).get("kind", "courseGroup")
 
     # Create course if no course_id was provided
     if not course_id:
