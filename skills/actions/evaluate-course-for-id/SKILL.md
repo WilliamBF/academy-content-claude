@@ -40,7 +40,7 @@ This checklist is embedded here — do not load it from an external file at runt
 | 1.4 | Examples used are relevant and illustrative | Yes |
 | 1.5 | No redundant or off-topic information included | Yes |
 | 1.6 | Learning progression is logical and well-structured | Yes |
-| 1.7 | Product claims, limits and "learn more" points link to documentation or carry a clear placeholder (`[LINK NEEDED]`, `[SME CHECK]`). **Fail** if a page makes product claims or gives numbers with no link and no flag. | Yes |
+| 1.7 | Product claims, limits and "learn more" points link to documentation or carry a clear flag, either an inline tag (`[LINK NEEDED]`, `[SME CHECK]`) or a comment anchored to the text (read comments when the source is a .docx). **Fail** if a page makes product claims or gives numbers with no link and no flag. | Yes |
 | 1.8 | Concepts are introduced before learners are asked to use them (no question, reflect prompt or check relies on something not yet shown) | Yes |
 | 1.9 | Orientation content (scope, prerequisites, term map or hierarchy visual) appears near the objectives, not mid-course | Yes |
 | 1.10 | Guidance is concrete: no advice without the how, a link or an SME flag | Yes |

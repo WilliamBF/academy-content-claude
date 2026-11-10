@@ -35,7 +35,7 @@ Sort every finding into one of three groups:
 
 | Group | What goes here | How it is handled |
 |---|---|---|
-| **Safe, mechanical** | Passive to active rewrites, acronym defined on first use, number format, title and heading case, terminology swaps (e.g. "trainings" to "training", "leverage" to "use"), spaced single hyphen, added `[LINK NEEDED]` or `[SME CHECK]` placeholders, a stacked callout converted to prose | One batch, one approval |
+| **Safe, mechanical** | Passive to active rewrites, acronym defined on first use, number format, title and heading case, terminology swaps (e.g. "trainings" to "training", "leverage" to "use"), spaced single hyphen, added LINK NEEDED or SME CHECK flags (in the document's existing format: inline tag or anchored comment), a stacked callout converted to prose | One batch, one approval |
 | **Author judgment** | Learning objectives, structure and ordering, widget choices, persona tone or depth changes, new examples | One at a time: quote, proposed replacement, approve / adjust / skip |
 | **Human only** | Content accuracy (ID 1.2), interactive elements working (ID 2.6), SME-flagged claims awaiting SME input | Never auto-applied. Stays Open in the report with a reminder of who needs to act |
 
@@ -63,7 +63,7 @@ Never overwrite an existing file without one of these two choices being made.
 2. **Author judgment:** go item by item. Show the current text, the proposed replacement and the reason. The author approves, adjusts or skips. Apply as you go, or collect and apply at the end if editing a Google Doc.
 3. **Human only:** list them once with the action needed. Do not change the text.
 
-Follow the style guide (`reference/celonis_content_style_guide.md`) for every replacement. Do not introduce new claims; mark anything unverified with `[SME CHECK: ...]` or `[LINK NEEDED: ...]`.
+Follow the style guide (`reference/celonis_content_style_guide.md`) for every replacement. Do not introduce new claims; flag anything unverified with SME CHECK or LINK NEEDED, using the document's existing flag format (inline `[SME CHECK: ...]` / `[LINK NEEDED: ...]`, or an anchored comment).
 
 ---
 

@@ -54,6 +54,7 @@ Course `.md` files come in two styles. Identify which you're working with before
   - `[N tabs element...]` -> `{Tabs}` snippet
   - `[Insert ...]` -> image placeholder (see Step 3)
   - `[code block start]` / `[code block end]` -> `<div class="code-block"><pre><code>...</code></pre></div>`
+- Contains author flags (`[SME CHECK: ...]`, `[SME INPUT NEEDED: ...]`, `[LINK NEEDED: ...]`, `[INTERACTIVE SUGGESTION: ...]`). These are not learner content: never output them as visible text. Convert each to `<!-- TODO: ... -->` so it appears in the TODO list of the final report.
 
 ---
 

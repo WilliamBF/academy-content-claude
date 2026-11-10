@@ -13,16 +13,18 @@ Pair it with `/write-course-script` (TI widget production) and `/write-exam-ques
 (assessment items) once the design is approved.
 
 **Routing:** this skill owns planning, outlining, objectives, sequencing and rough drafts. Once the
-objectives and structure are settled and the task becomes writing the actual section, lesson or
-page text (or a voiceover script), switch to `/write-course-script`, which carries the full scripting
-rules (terminology lock, link-or-flag, widgets, hierarchy labels). If a request mixes both ("outline
-and write lesson 2"), do the design first and then continue in `/write-course-script`.
+structure is settled and the task becomes writing the actual page text or a voiceover script,
+switch to `/write-course-script` (see Step 5). If a request mixes both, design first, then continue there.
+
+**Lean mode (optional):** if the instructional designer asks for it, keep output to what the learner
+or reviewer will use: no pages or sections added for completeness, no production scaffolding or meta
+notes about why a page exists, no review-setup section, no changelogs or terminology tables. Off by default.
 
 ---
 
 ## Step 1 — Confirm content type and source material
 
-Ask the user two things before starting anything:
+Ask only for what the request does not already tell you:
 
 1. **Content type** — e.g. a microcourse, a video/voiceover script, a full course, a module
    outline, a knowledge check, an exam, or something else. This matters because:
@@ -69,20 +71,18 @@ outdated or missing, re-fetch the live page rather than trusting the cached copy
 
 1. Confirm (or help pin down) the learning objective(s) as outcomes — "you'll be able to..." —
    before writing any prose. If the request has no clear objective, ask or propose one.
-2. Sequence the content using the instructional design foundations (hook, chunk into steps,
-   examples, recap, what's next).
-3. For outlines and storyboards, note a suggested format for each page, chosen from the snippet
-   cheat sheet by the shape of the content (and varied across consecutive pages), for example:
+2. Sequence the content using the instructional design foundations. Include a hook or recap where
+   it adds value for the learner, not on every page or lesson.
+3. For outlines and storyboards, suggest a page format where the shape of the content calls for
+   one, chosen from the snippet cheat sheet and varied across consecutive pages, for example:
    a comparison -> sidetoside; a process or flow -> processsnippet or verticalstepper; parallel
-   options -> Tabs; a glossary or scannable list -> Accordion; related UI screens -> carousel; a
-   demo -> videoembed; a quick check -> onpagequiz. Also flag where a separate TI page type fits
-   (QuizPage, FlipCardPage, HighlightZonePage), at most one knowledge check per lesson.
-4. Write following the style guide: active voice, short sentences, the number rules
-   (spell out zero to ten, numerals from 11), Celonis naming conventions.
-5. Apply the inclusion checklist to all examples, names, and characters as you go — not as a
-   final pass.
-6. For voiceover content, follow the voiceover-specific rules: spell out special characters,
-   keep sentences even shorter.
+   options -> Tabs; a scannable list -> Accordion; related UI screens -> carousel; a demo ->
+   videoembed. Flag where a separate TI page type fits (QuizPage, FlipCardPage, HighlightZonePage),
+   at most one knowledge check per lesson. Where a page presents a process, comparison or
+   decision, suggest a graphic for it, and show options as cards or a decision tree rather than prose.
+4. Follow `celonis_content_style_guide.md` while drafting (voice, numbers, naming, voiceover rules)
+   and apply its inclusion checklist to examples, names and characters as you go, not as a final pass.
+5. Name options, paths and routes in plain, descriptive words, never A, B1 or Option 1.
 
 ---
 
@@ -92,11 +92,12 @@ When asked to review or check a draft against "our standards" or "the guidelines
 
 1. Run through both `celonis_content_style_guide.md` and `instructional_design_foundations.md`
    as a checklist.
-2. Flag concrete issues with a short reason each — e.g. "passive voice: 'It is triggered by
+2. Flag concrete issues with a short reason each, anchored to the exact text (an anchored comment,
+   or an inline tag where comments can't be inserted) — e.g. "passive voice: 'It is triggered by
    Celonis' → 'Celonis triggers it automatically'".
 3. If the content includes quiz or exam questions, also check against
    `question_writing_guide.md` and note any violations.
-4. Summarise what's working, what needs fixing, and what's a judgment call.
+4. Add a brief summary of what needs fixing and what is a judgment call only if the user asks for one.
 
 ---
 
