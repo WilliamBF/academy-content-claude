@@ -39,22 +39,20 @@ writing style" below is a reminder, not a replacement. If this skill and the gui
 voice or style point, the guide wins, except for the skill-only rules in this file (single hyphen,
 thought-bubble prompts, widget and callout rules, author flags).
 
-## Terminology lock (before drafting)
-Build a short term list from the source material and ask the LXD to confirm it:
-- One external name per concept (the name learners see in the product or docs).
-- Note any internal-only names and do not use them in learner-facing text.
-- Check against the Celonis glossary and the naming conventions in
-  `reference/celonis_content_style_guide.md`.
-Use only the confirmed terms. If a concept has two names in the sources, ask which one to use.
+## Terminology lock
+Use one external name per concept (the name learners see in the product or docs) and never use
+internal-only names in learner-facing text. Check against the naming conventions in
+`reference/celonis_content_style_guide.md`. Keep the term list internal; ask the LXD only when the
+sources give one concept two names.
 
 ## Golden rules (non-negotiable)
 1. Never invent Celonis capabilities. If unsure whether a feature, tool name,
    scope, or behaviour is real, do not assert it. Mine the provided resources
    first; if still unsure, offer the user a docs lookup (`/fetch-celonis-docs`,
    search mode: one line, no fetching until they agree), and if they decline or
-   the docs don't settle it, write the line and add `[SME CHECK: ...]`.
-2. Flag, don't fabricate. For named customers or unverifiable claims, insert
-   `[SME INPUT NEEDED: ...]` placeholders instead of writing specifics.
+   the docs don't settle it, write the line and add an SME CHECK flag (see Author flags).
+2. Flag, don't fabricate. For named customers or unverifiable claims, add an SME INPUT NEEDED
+   flag instead of writing specifics.
 3. Single hyphen only. Never use a double hyphen or em/en dashes. Use a spaced
    single hyphen ( - ).
 4. Preserve the given structure. Only add/refine script text under each page.
@@ -62,14 +60,14 @@ Use only the confirmed terms. If a concept has two names in the sources, ask whi
 5. Version safety. Never overwrite an existing script file without a version
    suffix (e.g. _v2) or explicit confirmation to edit in place.
 6. Link or flag. Every product claim, threshold, or "learn more" point must have either a docs URL
-   from the provided resources, or a placeholder: `[LINK NEEDED: <topic>]`. Every number or limit
-   (e.g. a size, count, or frequency) needs a source or `[SME CHECK: ...]`. Never leave a claim that
-   a learner will want to follow up on without one of these.
+   from the provided resources (linked on a descriptive phrase in the sentence), or a LINK NEEDED
+   flag. Every number or limit (e.g. a size, count, or frequency) needs a source or an SME CHECK
+   flag. Never leave a claim that a learner will want to follow up on without one of these.
 
 ## Tone & writing style
 - Engaging, informal and conversational - like explaining a concept to a smart friend.
 - Concise and fluff-free; apply the "Don't make me think" principle.
-- Embed short reflective questions (prefixed with a thought bubble) to pause the learner.
+- Add a short reflective question (prefixed with a thought bubble) only where it adds value for the learner.
 - Lead with the point; vary sentence length; avoid over-formatting.
 
 Style digest (full rules in the style guide):
@@ -78,8 +76,8 @@ Style digest (full rules in the style guide):
 - Mix "we" (walking through together) and "you" (learner actions).
 - Numbers: spell out zero to ten, numerals for 11 and above; numerals with units and symbols
   (5%, 4 p.m., 6 kg); never open a sentence with a numeral.
-- Video or voiceover scripts: even shorter sentences; spell out code and special characters; open
-  each video with a short recap and close with what comes next.
+- Video or voiceover scripts: even shorter sentences; spell out code and special characters. Add a
+  brief recap or "what comes next" only where it helps the learner.
 - Read the script aloud before finalizing.
 
 ## Pedagogical best practices
@@ -88,28 +86,21 @@ Style digest (full rules in the style guide):
 - Show before you ask. Do not ask the learner to apply, classify or name something they have not
   yet been shown. Present the full set of options (with a visual where possible) before any
   reflect question or check that depends on them.
-- Orientation up front. Scope notes ("what this course does not cover"), prerequisites and the map
-  of key terms/hierarchy belong near the learning objectives in the first section, not mid-course.
 - Frame guidance positively. Write limits and risks as best practices ("Do X so that Y"), with
-  concrete steps, owners or links. Use at most one callout for a warning per page. Do not
-  sugarcoat real limitations; state them once, clearly, with the recommended action. If more than
-  half a page is about limits, restructure it around what to do.
+  concrete steps, owners or links. State real limitations once, clearly, with the recommended
+  action. If more than half a page is about limits, restructure it around what to do.
 - Be concrete or cut. Advice such as "monitor adoption" needs the how (which metric, where to
-  find it). If you cannot give it, mark `[SME INPUT NEEDED: ...]` or omit it.
-- Carry key analogies in text. An analogy that matters to the learning must be written out in a
-  few sentences, not carried only by an image, so it works for screen readers and translation.
-- Plain-language pass. Prefer the simpler accurate term ("group of use cases" over "class of use
-  cases"). Define any term a first-time learner might not know. Avoid obscure words in analogies.
-- One running use case. Anchor the course in a single concrete use case;
-  introduce "the question" early and refer back to it.
-- No forward references in openers. A page's opening line shouldn't assume a
-  concept introduced on a later page.
-- End actionable. Close a page on something the learner can do or reflect on.
-- Balance pages and lessons; split overloaded pages.
-- Title pairs. Give related pages complementary titles (setup/payoff).
-- Suggest the right widget, and vary widgets across consecutive pages.
-- Mirror tone from a reference script if provided, but follow the *target*
-  document's own widget conventions.
+  find it). If you cannot give it, add an SME INPUT NEEDED flag or omit it.
+- Plain language. Prefer the simpler accurate term ("group of use cases" over "class of use
+  cases") and write any analogy that matters to the learning out in text, so it works for screen
+  readers and translation.
+- One running use case. Anchor the course in a single concrete use case and refer back to it. A
+  page's opening line shouldn't assume a concept introduced on a later page.
+- Suggest the right widget, and vary widgets across consecutive pages. Mirror tone from a
+  reference script if provided, but follow the *target* document's own widget conventions.
+
+Scope notes, prerequisites, page balance and title pairs: see
+`reference/instructional_design_foundations.md`. Add them where they help the learner.
 
 ## Snippet vocabulary (write inline in the script)
 
@@ -128,7 +119,28 @@ Categories, at a glance (see the cheat sheet for exact tag names, parameters, an
 Other markup:
 - Visuals without a snippet: [Image placeholder - <desc, alignment>]; when you know the image's role, append `| purpose: decorative`, `| purpose: informative` or `| purpose: link:<destination>` so alt text can be written without questions later (rules: `reference/alt-text-guidelines.md`); Visual Placeholder: <title> + description; [Video placeholder - <desc>].
 - Sub-head inside a page: a bold line written as **H2 - <Title>**.
-- Author flags: [SME CHECK: ...], [SME INPUT NEEDED: ...] and [LINK NEEDED: ...].
+
+### Graphics
+Suggest a graphic wherever it explains a process, a comparison or a decision (show decisions and
+options as cards or a decision tree rather than prose). Other graphics that help the learner are
+fine. Do not add meaningless or repeated PNGs that only decorate the page.
+- Keep text on the graphic minimal and put the explanation in the page text before and after.
+- Colours: Celonis blue and black.
+- Arrows between boxes never cross over boxes; keep the layout clean.
+
+### Author flags
+Flag types: SME CHECK (unsure a fact is right), SME INPUT NEEDED (a specific you cannot supply),
+LINK NEEDED (a claim with no source) and INTERACTIVE SUGGESTION (page type plus one-line
+rationale). Where a source exists, link a descriptive phrase inside the sentence instead of
+flagging. Never use trailing "[Link: ...]" tags or "Click here".
+
+Ask the LXD once which format to use, unless the document type makes it clear:
+- **Comments:** a comment anchored to the exact text. Default for Word (.docx).
+- **Inline tags:** `[SME CHECK: ...]`, `[SME INPUT NEEDED: ...]`, `[LINK NEEDED: ...]`,
+  `[INTERACTIVE SUGGESTION: <type> - <rationale>]`. Default for Google Docs and Markdown, where
+  comments cannot be inserted.
+
+Use one format throughout a document. `evaluate-course-for-id` and `apply-review-fixes` accept both.
 
 Callout limits:
 - At most 1 callout per page (normally; a second needs a reason). Never place two callout boxes
@@ -158,26 +170,19 @@ stays available; fall back to brackets only when matching an existing document's
 ## TI interactive page types (suggest placement during scripting)
 
 These are dedicated TI page types — not inline widgets. They require a separate page
-in the course structure. During scripting, flag opportunities with:
-
-`[INTERACTIVE SUGGESTION: <type> — <one-line rationale>]`
+in the course structure. During scripting, flag opportunities with an INTERACTIVE SUGGESTION flag (format per Author flags
+above): the page type and a one-line rationale.
 
 Do **not** insert the full markup unless asked. Mark it and let the author decide.
 
-| Page type | Best for | Suggest when... |
-|---|---|---|
-| On-page quiz (inline in TextPage) | Quick knowledge check, no page break | End of a key concept page; learner just absorbed 1-2 new ideas |
-| Full-page quiz (QuizPage) | Formal check with per-option feedback | End of each lesson; after 3+ concepts introduced since the last check |
-| Flip cards (FlipCardPage) | Term → definition, concept recall | 3+ terms or concepts introduced in a lesson; comparative content (before/after, old/new) |
-| Highlight zones (HighlightZonePage) | Clickable hotspots on a UI screenshot or diagram | Explaining a UI layout, process flow diagram, or spatial relationship |
-| Carousel (snippet) | Stepped walkthrough of related items in a single page | 3-6 sequential steps, UI screens, or examples that belong together but would clutter a flat list |
+- **On-page quiz** (inline): end of a key concept page, after 1-2 new ideas.
+- **Full-page quiz** (QuizPage): end of a lesson, after 3+ concepts since the last check.
+- **Flip cards** (FlipCardPage): recall of 3+ terms, or before/after comparisons.
+- **Highlight zones** (HighlightZonePage): hotspots on a UI screenshot or diagram.
+- **Carousel** (snippet): 3-6 sequential steps, screens or examples that belong together.
 
-**Learner UX principles to apply when suggesting:**
-- Space checks. Aim for one knowledge check per lesson (not per page) — check-fatigue is real.
-- Vary format. Don't suggest the same interactive type on consecutive pages.
-- Right tool for the cognitive load. Flip cards are for recall, not for introducing new instruction.
-- Interactions earn their place. Only suggest an interactive type when it genuinely improves
-  comprehension or engagement — not to pad a page count.
+Aim for one knowledge check per lesson, vary the type across consecutive pages, use flip cards
+for recall (not new instruction), and suggest an interactive only where it improves comprehension.
 
 ## Titles and learning objectives
 - Titles: a short action phrase or plain noun phrase. Course titles use Title Case (capitalise
@@ -197,25 +202,26 @@ Do **not** insert the full markup unless asked. Mark it and let the author decid
   the labels it already uses ([Chapter] ..., [Lesson] ..., [Page] ...) per golden rule 4. If it is
   unclear which applies, ask. Use the same word in titles, cross-references ("see Section 1") and
   summaries.
-- Each page usually has a Content: note (design intent) and a Script section.
-  Write the script under Script; if a page has none, add the heading.
+- Name options, paths and routes in plain, descriptive words (for example "Fresh start",
+  "Case-centric", "Object-centric"). Never A, B1, B2 or Option 1.
+- Each page has a Script section; write the script under it and add the heading if missing. A
+  per-page Content: note (design intent) is optional: add one only if the LXD asks for it.
+- Editing a file the LXD has changed: the saved version is the source of truth. Never regenerate
+  from an older draft and never re-add anything the LXD removed. When regenerating a Word review
+  document, keep the original comments (or ask for their anchors) and keep line breaks and lists
+  intact.
 - When editing a .docx, match existing styling: body text in the document's
   normal style; real bulleted lists with bold lead-in words where appropriate.
 
-## Asset types & constraints (Celonis Academy)
-- Online Course: >=2 sections (chapters), >=2 lessons/section, >=2 pages/lesson; up to
-  ~1.5 h; includes hands-on exercises.
-- Microcourse: pages only (no sections/lessons); up to ~30 min; no hands-on.
-- Standalone Video: 2-10 min microlearning nugget.
-- Live Webcast: quick, on-demand session for a rapid feature rollout.
-Sanity-check the requested structure against the declared asset type and flag
-mismatches.
+## Asset types & constraints
+Check the requested structure against the declared asset type (online course, microcourse,
+standalone video, live webcast) and flag mismatches. Constraints: `reference/asset-types.md`.
 
 ## Quiz authoring standard
-- Exactly 3 options per question.
-- Vary the correct option's position across questions.
-- Keep options similar in length.
+- Exactly 3 options per question, with plausible distractors, similar in length.
+- Spread the correct option's position across questions.
 - Per-option feedback: one-line rejoinder for every choice.
+- Test judgment, not recall of the page. Full rules: `reference/question_writing_guide.md`.
 
 ## Working with the document
 - Reading: .txt/.md can be read directly; a .docx must first be converted to
@@ -240,5 +246,5 @@ mismatches.
 Be a proactive thinking partner, not an order-taker. Challenge weak structure,
 propose better alternatives, explain trade-offs - then let the LXD decide.
 
-Before delivering a full draft, list the LINK NEEDED and SME INPUT NEEDED items in one summary so
-the LXD can collect the missing sources in one go.
+Before delivering a full draft, give a brief count of open LINK NEEDED and SME INPUT NEEDED flags so
+the LXD can collect the missing sources in one go. The flags themselves stay with their text.
