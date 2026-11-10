@@ -26,6 +26,8 @@ The `.md` file is a pipeline artifact — it is never manually maintained. Alway
 
 Read `reference/html-snippet-blocks.html` (in this plugin's root directory) in full before generating any HTML. This is the authoritative source for all snippet structures.
 
+Also read `reference/snippet-nesting.md` before converting any draft that contains a `{/tag}` close tag (see "Nested snippets" in Step 4).
+
 `reference/snippet-cheat-sheet.md` is the authoring-side counterpart — the tag names in Step 4's mapping tables below must stay in sync with it. If an author's `.md` draft uses a `{tag}` from the cheat sheet that isn't in this skill's tables, treat that as a bug to flag (both files should always list the same snippet set), not as an unrecognised tag.
 
 ---
@@ -183,6 +185,33 @@ For anything not in this table, use context to make a judgment call. Never silen
 | `{textXXL}` | Oversized display text |
 | `{internalcontent}` | "FOR INTERNAL AUDIENCE ONLY" disclaimer banner |
 
+### Nested snippets (`{tag}` ... `{/tag}`)
+
+A tag with a matching `{/tag}` close tag is a **container**; the snippets between the two tags are its **children**. Tags with no close tag behave exactly as before (applies until the next heading or tag). Full syntax, slots and support matrix: `reference/snippet-nesting.md` — that file is authoritative; the summary below is how to act on it.
+
+**Parsing**
+1. Match each `{/tag}` to the nearest unclosed opening tag of the same name. A child with no close tag ends at the next tag, bold tab/accordion title or the parent's close tag.
+2. Resolve deviations (table above) on both opening and closing tags, e.g. `{/note}` closes `{infobox}`.
+3. `{Tabs}`: each bold line inside starts a tab; children belong to the tab above them. `{Accordion}`: each item holds its own children; `{/Accordion}` ends the group. Consecutive flat `{Accordion}` items still merge into one wrapper.
+4. **Backward compatibility:** a tag is a container only if a matching `{/tag}` exists. Existing scripts without any close tags (flat `{infobox}`, `{Tabs}`, `{Accordion}`, `{onpagequiz}`, …) convert exactly as before; never treat a missing close tag as an error or a TODO. Only a `{/tag}` with no opener is a TODO: emit `<!-- TODO: unmatched {/tag} -->` and render flat. Never drop content.
+
+**Rendering**
+1. Build the parent from the literal markup in `reference/html-snippet-blocks.html`, then build each child from its own reference markup and place it **inside the parent's content slot**, in order (slot table in `reference/snippet-nesting.md`). Add no extra wrapper divs and no extra classes.
+2. Plain text inside a container becomes a normal `<p>` in the slot.
+3. For `{different-color}`, the container is `<div class="different-color">…</div>`; an optional bold first line is a `<p><strong>` title, children follow in order.
+4. Use **unique ids per page** for id-bearing children (`#result` stays as in the reference quiz markup, but `r1..r8`/`c1..c8` and carousel ids must not repeat on one page; rename with a topic-specific suffix if needed, keeping `for`/`aria-controls` in sync).
+5. No headings inside a slot (convert any heading to a bold paragraph); the page keeps its single `<h1>`.
+6. Every `<img>` inside a slot still goes through Step 3 (CDN placeholder + alt text pass).
+
+**Guardrails — render flat and report, never fail**
+Render the children **after** the parent as siblings (flattened) and list the case under "Nesting flags" in the Step 8 report when:
+- the combination is marked **Avoid** or **Untested** in the matrix (notably `{onpagequiz}` containing `{Accordion}`, `{infobox}` containing `{formattedbullets}`),
+- nesting is deeper than two levels,
+- Accordion is inside Accordion, or Tabs inside Tabs,
+- a leaf snippet (anything not a container in the slot table) is given children.
+
+Tell the user when flattening happens and suggest the verified alternative (e.g. `{different-color}` instead of `{infobox}` around a list; `{Accordion}` after the quiz, not inside it).
+
 ---
 
 ## Step 5 — Accessibility requirements (WCAG 2.2 AA)
@@ -195,6 +224,7 @@ Non-negotiable rules for every topic page:
 - No inline colour styles — use approved brand colours only if strictly necessary.
 - Accordion: `aria-expanded="false"`, `aria-controls` on triggers.
 - Tabs: `role="tablist"`, `role="tab"`, `role="tabpanel"` with `aria-selected`.
+- Nested snippets: no duplicate `id` values on a page; no heading elements inside a tab panel, accordion body or container slot.
 - Every `<iframe>` must have a `title` attribute.
 - Tables: `<th scope="col/row">`. Include `<caption>` or `aria-label`.
 
@@ -240,6 +270,8 @@ Write to `courses/<course-name>/03_HTML/<course-name>.html`. Separate topic page
 Print:
 - Topics generated: N
 - Snippets used: type and count
+- Nested combinations used: parent > child and count (e.g. "Tabs > infobox x2")
+- Nesting flags: any combination rendered flat (Avoid / Untested / deeper than two levels / unmatched close tag), with the suggested alternative
 - Images requiring CDN upload: filenames in `04_Assets/`
 - Possible animated GIFs: flagged images
 - Judgment calls: deviation resolutions

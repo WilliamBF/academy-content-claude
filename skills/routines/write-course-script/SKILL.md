@@ -107,7 +107,8 @@ Scope notes, prerequisites, page balance and title pairs: see
 Read `reference/snippet-cheat-sheet.md` (this plugin's root) before scripting a page with any widget
 beyond a plain paragraph. It's the full menu of snippets `convert-course-to-html` can produce, in
 the exact `{tag}` syntax that skill reads without any relabeling — tag correctly here and nothing is
-lost or generalised down to "just a blue box" at conversion time.
+lost or generalised down to "just a blue box" at conversion time. For snippets inside snippets, see
+"Nesting snippets" below and `reference/snippet-nesting.md`.
 
 Categories, at a glance (see the cheat sheet for exact tag names, parameters, and multi-item syntax):
 - **Info & callout:** infobox (with/without title), different-color, page-transi, block-statement__quote, internalcontent
@@ -144,7 +145,9 @@ Use one format throughout a document. `evaluate-course-for-id` and `apply-review
 
 Callout limits:
 - At most 1 callout per page (normally; a second needs a reason). Never place two callout boxes
-  (infobox, different-color, page-transi) back to back.
+  (infobox, different-color, page-transi) back to back. Exception: `{different-color}` used as a
+  container around other snippets (see "Nesting snippets" below) is a layout wrapper, not a callout,
+  and does not count. An `{infobox}` always counts, including one nested inside Tabs or an Accordion.
 - If a page needs more than one callout, convert the others to prose, a table, formattedbullets,
   sidetoside or an Accordion.
 - Use infobox for one key definition or one warning, not for every important sentence.
@@ -161,6 +164,27 @@ Pick the widget that fits, and don't default to the same 2-3 tags on every page:
 - formattedbullets for a short, styled numbered list; codeblock for multi-line code or queries; inlinecode for a field, function or value name inside a sentence.
 - internalcontent only for material that must not reach learners (author notes, SME-only detail); never in learner-facing text.
 - Before finishing a section, check you have not left a widget unused that would fit better than plain paragraphs, and that no single tag dominates (the ID review rates this under 2.9).
+
+### Nesting snippets
+
+A snippet can sit inside another one (an infobox in a tab, a list in an accordion, several snippets on
+a blue background). Read `reference/snippet-nesting.md` for the syntax and the support matrix before
+you nest.
+
+- **Close every container with `{/tag}`**, e.g. `{different-color}` ... `{/different-color}`,
+  `{Tabs}` ... `{/Tabs}`, `{Accordion}` ... `{/Accordion}`. Flat snippets keep their open tag only.
+- Close a child (`{/infobox}`) when more content follows it in the same slot; the last child before
+  the parent's close tag may omit it.
+- **Two levels only.** If a page seems to need a third, restructure (split the page or move the inner
+  snippet after the container).
+- **Only use combinations marked Verified in the matrix.** Untested ones: pick a verified alternative
+  and add an INTERACTIVE SUGGESTION flag if the author wants to try it.
+- **Prefer `{different-color}` as the blue-background container** for mixed content, lists, quizzes,
+  accordions and tabs. Use `{infobox}` only for one short note (text, image or code, never a list).
+- **Never put an Accordion inside an `{onpagequiz}`.** Put `{Accordion}` after `{/onpagequiz}`.
+- Do not repeat the same id-bearing snippet (onpagequiz, checkbox lists, carousel) twice on one page.
+- Do not nest to cram content in. Nesting is for content that belongs to one tab, one accordion item or
+  one highlighted block; otherwise keep snippets flat and vary widgets across the page.
 
 The older bracket markers ([blue box start]/[blue box end], [Tabs start]..., [Accordions start]...,
 [Code block start]...) still work — `convert-course-to-html` maps them to the same handful of snippets —

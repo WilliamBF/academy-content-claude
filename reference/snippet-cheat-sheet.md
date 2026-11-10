@@ -130,9 +130,36 @@ A worked example.
 
 ---
 
+## Nesting snippets (a snippet inside another)
+
+A snippet that holds other snippets needs a **closing tag**, `{/tag}`, on its own line. Flat tags stay as they are; only containers need it.
+
+```
+{Tabs}
+**Overview**
+{different-color}
+Key idea for this tab.
+{/different-color}
+**Steps**
+{formattedbullets}
+First step
+Second step
+{/formattedbullets}
+{/Tabs}
+```
+
+- Close the parent (`{/Tabs}`, `{/different-color}`, `{/Accordion}`, `{/infobox}`).
+- Close a child when more content follows it in the same slot; the last child may skip its close tag.
+- Two levels only: parent > child.
+- Use `{different-color}` for a blue background around lists, quizzes, accordions or tabs. Keep `{infobox}` for one short note (text, image or code only, never a list).
+- Need an accordion under a quiz? Put `{Accordion}` after `{/onpagequiz}`, not inside it.
+- Which combinations are safe, and why: `reference/snippet-nesting.md`.
+
+---
+
 ## Tips to make conversion easier
 
-- **One tag per block** — don't stack two tags with no content between them.
+- **One tag per block** — don't stack two tags with no content between them (unless you are nesting: then the parent's content starts right after its tag).
 - **Tags on their own paragraph** — no text before or after the tag on the same line.
 - **Keep tables as tables** — don't use images of tables or fake tables with tabs/spaces.
 - **Name your videos** — always include the Wistia ID and a descriptive title in the tag line; it saves a manual lookup later.

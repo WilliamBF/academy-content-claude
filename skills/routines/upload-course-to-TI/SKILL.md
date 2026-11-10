@@ -30,9 +30,11 @@ Upload a standardised payload JSON to Thought Industries. Runs after `convert-co
 
 2. **Videos resolved** — Scan for `WISTIA_MEDIA_ID_HERE`. Replace each with the real Wistia media ID before uploading.
 
-3. **Payload exists** — Confirm `upload_payload.json` (or a named equivalent) is present in `05_LMS_Sync/` for the course.
+3. **Nesting check (advisory)** — Nested snippets need no payload change: topic bodies are plain HTML and the LMS accepts them as-is. The uploader scans every body (dry run and real run) and prints `Nesting warnings` for combinations that are known to break or are outside the verified set in `reference/snippet-nesting.md`: Accordion inside an on-page quiz, formattedbullets inside an infobox, Accordion in Accordion, Tabs in Tabs, more than two levels, headings inside a container slot, and duplicate ids (the quiz `#result` id is exempt). Warnings never block the upload. Show them to the user, and if one points at a real problem, send the topic back to `convert-course-to-html` rather than editing the payload by hand.
 
-4. **Course ID** — Either:
+4. **Payload exists** — Confirm `upload_payload.json` (or a named equivalent) is present in `05_LMS_Sync/` for the course.
+
+5. **Course ID** — Either:
    - Have the UUID of an existing shell ready to pass via `--course-id`, **OR**
    - Add a `"course"` block to your `upload_payload.json` (see Payload JSON format below) — the script creates the shell automatically and prints the new course ID.
 
@@ -81,7 +83,7 @@ python "$CONTENT_CREATION_PLUGIN_ROOT/skills/routines/upload-course-to-TI/ti_upl
   --dry-run
 ```
 
-Dry run output shows: section count / lesson count / topic count, and any pending placeholder warnings. If a `"course"` block is present, it prints `"Would create new course shell: <title>"`. No API calls are made.
+Dry run output shows: section count / lesson count / topic count, any pending placeholder warnings, and any nesting warnings. If a `"course"` block is present, it prints `"Would create new course shell: <title>"`. No API calls are made.
 
 ---
 
