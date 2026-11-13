@@ -35,6 +35,12 @@ Ask only for what the request does not already tell you:
 2. **Source material** — a Google Drive folder, local files, or other docs beyond the bundled
    references. Don't assume based on a past conversation — ask every time.
 
+3. **Metadata and roles** — capture these once, up front, so they are not chased at upload time:
+   working title, catalog description, meta description, level, duration, role and feature,
+   target persona, owner, SMEs (primary and secondary), peer reviewer, and existing resources to
+   reference. Character limits and defaults: `reference/asset-types.md`. Keep titles and
+   descriptions keyword-relevant and never padded to hit a limit.
+
 If invoked with no task at all (bare slash command), also ask for the topic:
 > "What would you like to create, and what should it cover? What kind of content is it
 > (microcourse, video script, full course, exam, etc.)? Do you have a Google Drive folder or
@@ -83,9 +89,19 @@ outdated or missing, re-fetch the live page rather than trusting the cached copy
    videoembed. Flag where a separate TI page type fits (QuizPage, FlipCardPage, HighlightZonePage),
    at most one knowledge check per lesson. Where a page presents a process, comparison or
    decision, suggest a graphic for it, and show options as cards or a decision tree rather than prose.
-4. Follow `celonis_content_style_guide.md` while drafting (voice, numbers, naming, voiceover rules)
+   **Video storyboard format:** a two-column table, no scene numbers and no screenshots. Left
+   column "On screen": a short text description of the visual, any on-screen text, and what is
+   being demonstrated. Right column "Voiceover": the script for that beat. One row per beat, so
+   reviewers can comment on the row. Screens and images are captured at production.
+4. Courses open with a Welcome page (what the course contains, why take it, the objectives in
+   plain words, time, prerequisites) and close with a Congratulations page ("You should now be
+   able to...", a docs link, next steps and feedback). Include both by default. Label videos
+   inside a course as videos in the outline.
+5. Review gate: SME review happens on the storyboard or outline. Once approved, messaging and
+   visuals are frozen before production; later edits are minor wording only.
+6. Follow `celonis_content_style_guide.md` while drafting (voice, numbers, naming, voiceover rules)
    and apply its inclusion checklist to examples, names and characters as you go, not as a final pass.
-5. Name options, paths and routes in plain, descriptive words, never A, B1 or Option 1.
+7. Name options, paths and routes in plain, descriptive words, never A, B1 or Option 1.
 
 ---
 
