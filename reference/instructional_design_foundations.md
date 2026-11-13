@@ -41,6 +41,12 @@ Use judgment on how much of the process applies to the task at hand.
   than reproducing it verbatim. If a chunk doesn't map to an objective, question whether it
   belongs.
 
+## Learning objectives shown to learners (external LOs)
+
+The objectives on an asset's detail page should complete the sentence "In this training, you'll
+learn how to..." and start with a Bloom's action verb (see `question_writing_guide.md` for the
+levels). One verb per objective, written as an outcome the learner can check themselves against.
+
 ## Gagne's 9 Events of Instruction
 
 A practical sequence for structuring a lesson or module, useful when drafting a script or

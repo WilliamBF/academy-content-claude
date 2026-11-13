@@ -173,6 +173,9 @@ When you know the course ID, always finish by sharing the backend manager link s
 
 Use the course ID, never the course group ID. If only a topic/lesson/section UUID is known, look up the course ID with `/get-TI-course-structure` rather than guessing.
 
+> **Next step:** If the course's catalog description, tags, duration, level, or ribbon may also
+> need changes, suggest `/update-TI-course-metadata`.
+
 ---
 
 ## Notes

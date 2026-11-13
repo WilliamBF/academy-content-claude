@@ -30,7 +30,7 @@ live course):
 
 | Field | UI location | Notes |
 |---|---|---|
-| `description` | Basic info | Nicole's house rule: ≤100 characters, imperative, "what's in it for me" framing. The API allows up to 5000, but the skill enforces 100. |
+| `description` | Basic info | Nicole's house rule: ≤75 characters, imperative, "what's in it for me" framing. The API allows up to 5000, but the skill enforces 75. |
 | `metaTitle` | SEO | Fixed template: `[Course Title] \| Celonis Academy`. |
 | `metaDescription` | SEO | ≤155 characters, active voice, call-to-action, keyword-rich, matches page content. See `Meta description good practices` on Confluence. |
 | `customFields` | Design Settings > Custom Fields | Human-readable string values, not UUIDs. Keys: `duration`, `level`, `product` (UI label: "Feature"), `role`. Arrays for multi-select (`product`, `role`), strings for single-select (`duration`, `level`). |
@@ -103,7 +103,7 @@ tag application visually in the admin UI.
 If a course script exists locally (e.g. `courses/<slug>/02_Drafts/<slug>.md`), read it and
 propose:
 
-1. **`description`** — one imperative sentence, ≤100 characters, answering "what's in it for
+1. **`description`** — one imperative sentence, ≤75 characters, answering "what's in it for
    me?". Ask the LXD if there's a keyword that must appear (e.g. "MCP" for the Agent Tools
    course). Draft two alternatives so the LXD can pick.
 
@@ -217,7 +217,7 @@ Or pass the payload inline as JSON via `--json '<...>'`. The dry run prints:
 
 - The resolved Course Group ID (with a note if the input was a Course UUID that got resolved).
 - The exact PUT body that would be sent.
-- Any validation warnings (e.g. description over 100 chars, unknown custom-field option,
+- Any validation warnings (e.g. description over 75 chars, unknown custom-field option,
   audience tag not confirmed).
 
 ---
@@ -246,15 +246,21 @@ The script:
 
 ---
 
-## Step 9 — Nudge the LXD to finalise in the UI
+## Step 9 — Report what was set and what is still manual
 
-After a successful write, print a short checklist:
+After a successful write, report in two short lists:
 
-- Verify tag application in the TI admin UI (GET does not return tagIds).
-- Set `source` (Advanced Settings > Source) manually — API can't write this yet.
+**Set via the API:** each field written (description, metaTitle, metaDescription, custom fields,
+tags, ribbon, tabs), with its value.
+
+**Still to do manually in the TI admin UI:**
+- Verify tag application (GET does not return tagIds).
+- Set `source` (Advanced Settings > Source); the API can't write it yet.
 - If tabs were written: check Detail Page Settings > Tabs - new tabs present, no wanted
   free-text tab lost (tabs cannot be read back via the API).
 - Double-check the ribbon appears as expected.
+- Anything else from "What this skill does NOT set" that applies to this asset (for example
+  catalog and detail images).
 
 ---
 
@@ -262,7 +268,7 @@ After a successful write, print a short checklist:
 
 ```json
 {
-  "description": "One imperative sentence, ≤100 chars.",
+  "description": "One imperative sentence, ≤75 chars.",
   "metaTitle": "Course Title | Celonis Academy",
   "metaDescription": "Active-voice, keyword-rich, ≤155 chars, ends with CTA.",
   "customFields": {

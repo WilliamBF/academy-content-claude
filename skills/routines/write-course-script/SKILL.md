@@ -80,6 +80,13 @@ Style digest (full rules in the style guide):
   brief recap or "what comes next" only where it helps the learner.
 - Read the script aloud before finalizing.
 
+## Video script mode
+For a standalone video, or a video page inside a course, write the script as a two-column table
+matching the storyboard from `/design-course-content`: "On screen" (visual, on-screen text,
+what is demonstrated) on the left, "Voiceover" on the right, one row per beat, no scene numbers.
+Once the voiceover is approved, reuse it as the video transcript, placed in an accordion directly
+below the video. Keep the transcript separate from the text body shown beneath the video.
+
 ## Pedagogical best practices
 - Define before you use. Introduce foundational terms before building on them;
   don't assume prior knowledge unless it's a stated prerequisite.

@@ -17,7 +17,7 @@ Usage:
 
 Payload JSON format (human-name inputs):
     {
-      "description": "...",           # <=100 chars (house rule), API allows 5000
+      "description": "...",           # <=75 chars (house rule), API allows 5000
       "metaTitle": "...",             # "<Course Title> | Celonis Academy"
       "metaDescription": "...",       # <=155 chars per Confluence guidelines
       "customFields": {
@@ -85,7 +85,7 @@ KNOWN_TOP_LEVEL_FIELDS = {
 LEARNING_OBJECTIVES_TAB_LABEL = "Learning Objectives"
 VISIBILITY_TAGS = {"internal", "public", "customer", "partner", "academic"}
 SAFE_AUDIENCE_TAG = "academy"
-HOUSE_DESCRIPTION_MAX = 100
+HOUSE_DESCRIPTION_MAX = 75
 HOUSE_META_DESCRIPTION_MAX = 155
 
 

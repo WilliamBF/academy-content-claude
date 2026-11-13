@@ -252,7 +252,7 @@ After creation the script prints the **Course Group ID** — you need this to se
 | `kind` | string | `"courseGroup"` (default), `"video"`, or `"article"`. |
 | `contentType` | string | Required for `kind: article`. Use `"Article"` (most common) or `"Page"`. |
 | `videoAsset` | string | Wistia media ID. Only for `kind: video`. |
-| `description` | string | Catalog short description (~70 chars). |
+| `description` | string | Catalog short description (≤75 chars). |
 | `metaTitle` | string | SEO meta title for the course group page. |
 | `metaDescription` | string | SEO meta description (≤ 155 chars). |
 | `customFields.duration` | string | One of: `<30min`, `30min`, `30min - 1h`, `1h`, `1h - 1h 30`, `1h - 3h`, `3h+` |
