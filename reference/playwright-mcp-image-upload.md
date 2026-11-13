@@ -45,7 +45,7 @@ This is different from the Mode A/B pattern used in `fetch-celonis-docs` (which 
 
 ## Step-by-step recipe
 
-1. **Stage images.** Copy the images into the MCP's allowed uploads folder (its session uploads directory / `.playwright-mcp` subfolder) first — the MCP can't reach arbitrary host paths.
+1. **No staging needed.** `setInputFiles` accepts the Windows workspace path directly, so images can be uploaded from where they already live — don't copy them into the MCP's uploads folder.
 
 2. **Navigate to the dedicated upload course.** Use the exact same URL `image_uploader.py` uses — copy it from that script rather than retyping it, so the two never drift apart:
    ```
@@ -63,43 +63,40 @@ This is different from the Mode A/B pattern used in `fetch-celonis-docs` (which 
    Fill the "Page Title" textbox with a clear, dated title (e.g. `Image Upload 2026-10-16`).
 
 5. **Batch-upload images.** Work in batches of **about 10 images** per `browser_run_code_unsafe` call (larger batches hit the tool timeout, which resets the browser and loses every result from that call). For each image in a batch:
+   - **From the second image on, press `Enter` first** (`page.keyboard.press("Enter")`, before clicking the Image button). After an upload the new image stays selected, so Enter moves the caret to a new line below it and the next image lands after it rather than replacing it.
    - Click `a.re-button[data-re-name='image']`.
    - Wait for `div.upload-redactor-box` to appear.
    - Upload with `page.locator("input[type='file']").first().setInputFiles(path)` as the **primary** method — not a fallback. **Never** use the file-chooser-event pattern (`expect_file_chooser`) in a loop; it stalled and swallowed return values during the pilot.
    - Wait for the new figure to appear.
-   - **Close the upload popup explicitly** (Escape, then its close button, then force-hide as a last resort) and wait for `div.upload-redactor-box` to be hidden. Redactor does not always close it after an upload; a lingering popup intercepts the next click and stalls the whole batch.
+   - **Dialog check:** if `div.redactor-modal.open` exists, click its `button.redactor-button-unstyled` whose text is "Cancel". Do this after every upload.
+   - **Do not click the uploaded figure and do not press ArrowDown.** Clicking `figure.redactor-uploaded-figure` opens the Edit dialog, and the image is already selected by default after an upload.
    - Wrap each image in `try/catch` with short timeouts so one failure records `null` and the loop continues, and the call always returns results before the tool timeout.
+
+   **Notes:**
+   - The upload popup (`div.upload-redactor-box`) closes by itself after a successful upload — no explicit close/Escape/force-hide step is needed.
+   - `setInputFiles` accepts the Windows workspace path directly (e.g. `C:\Users\...\images\img1.png`), so no staging/copying into an uploads folder is needed.
 
    Example batch-upload pattern for one `browser_run_code_unsafe` call:
    ```javascript
-   async function closeUploadPopup(page) {
-     const box = page.locator("div.upload-redactor-box");
-     for (let attempt = 0; attempt < 3; attempt++) {
-       if (!(await box.first().isVisible().catch(() => false))) return;
-       if (attempt === 0) {
-         await page.keyboard.press("Escape");
-       } else {
-         const closeBtn = page.locator(
-           ".redactor-modal-close, .re-modal-close, .redactor-modal [data-re-name='close'], .modal__close, button[aria-label='Close']"
-         ).first();
-         if (await closeBtn.isVisible().catch(() => false)) await closeBtn.click({ timeout: 2000 }).catch(() => {});
-       }
+   async function cancelEditDialog(page) {
+     // If an Edit dialog is open, cancel it so it doesn't block the next image.
+     const modal = page.locator("div.redactor-modal.open");
+     if (await modal.first().isVisible().catch(() => false)) {
+       await modal.locator("button.redactor-button-unstyled", { hasText: "Cancel" }).first()
+         .click({ timeout: 2000 }).catch(() => {});
        await page.waitForTimeout(300);
      }
-     // Last resort: force-hide the popup and its backdrop so it can't intercept clicks
-     await page.evaluate(() => {
-       document.querySelectorAll("div.upload-redactor-box, .redactor-modal, .redactor-modal-overlay, .re-modal-overlay")
-         .forEach((el) => { el.style.display = "none"; });
-     });
    }
 
    async function uploadBatch(page, items) {
-     // items: [{ path: "/abs/path/in/uploads/dir/img1.png", filename: "img1.png" }, ...]
+     // items: [{ path: "C:\\abs\\path\\img1.png", filename: "img1.png" }, ...]
      // Keep to ~10 items per call.
      const results = {};
+     let first = true;
      for (const { path, filename } of items) {
        try {
-         await closeUploadPopup(page); // clear any popup left over from a previous image
+         if (!first) await page.keyboard.press("Enter"); // move below the still-selected previous image
+         first = false;
          const before = await page.locator("figure.redactor-uploaded-figure img").count();
          await page.locator("a.re-button[data-re-name='image']").click({ timeout: 5000 });
          await page.locator("div.upload-redactor-box").waitFor({ state: "visible", timeout: 5000 });
@@ -109,15 +106,13 @@ This is different from the Mode A/B pattern used in `fetch-celonis-docs` (which 
            before,
            { timeout: 15000 }
          );
-         await closeUploadPopup(page);
+         await cancelEditDialog(page);
          const imgs = await page.locator("figure.redactor-uploaded-figure img").all();
          const src = await imgs[imgs.length - 1].getAttribute("src");
          results[filename] = src && src.endsWith("-" + filename) ? src : (src || null);
-         await page.locator("figure.redactor-uploaded-figure").last().click({ timeout: 3000 });
-         await page.keyboard.press("ArrowDown");
        } catch (e) {
          results[filename] = null; // record the failure, keep going; retry nulls in a later call
-         await closeUploadPopup(page).catch(() => {});
+         await cancelEditDialog(page).catch(() => {});
        }
      }
      return results;
@@ -135,7 +130,7 @@ This is different from the Mode A/B pattern used in `fetch-celonis-docs` (which 
 ## Gotchas / recovery
 
 - **Stuck file-chooser dialog** — if one gets queued and stalls everything, call `browser_file_upload` repeatedly with no paths to cancel it. Other tools refuse to run while a chooser is pending.
-- **No `require` / Node `fs` inside `browser_run_code_unsafe`** — can't read local files that way. Use `setInputFiles`, which the MCP resolves against its own allowed folder. In-page `fetch()` of the CDN URL is also blocked — don't try to pull image bytes through page JS.
+- **No `require` / Node `fs` inside `browser_run_code_unsafe`** — can't read local files that way. Use `setInputFiles`, which accepts the Windows workspace path directly. In-page `fetch()` of the CDN URL is also blocked — don't try to pull image bytes through page JS.
 - **No bulk upload** — Redactor's file input is single-file only (`multiple: false`); dropping multiple files at once only uploaded one in testing. The per-image loop is the only route, and it's already cheap (~0.8s/image in the pilot).
 - **Transient "classifier temporarily unavailable" error** — retry after a short wait.
 - **Screenshots are viewport-only**, and a resize doesn't always persist — re-resize the window after login if consistent captures matter.
